@@ -9,7 +9,7 @@ calc_catches <- function(data, input, fmults) {
       ), by = "gear") %>%
     group_by(Age) %>%
     mutate(
-      z = sum(fmult * Selectivity) + M
+      z = sum(fmult * Selectivity) + M + sum(f_age_rec_2020)
     ) %>%
     ungroup() %>%
     mutate(
