@@ -29,6 +29,7 @@ ui <- fluidPage(
       uiOutput("checkbox"),
       
       
+      
       uiOutput("sliders"),
       
       rHandsontableOutput('table'),

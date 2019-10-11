@@ -66,6 +66,7 @@ server <- function(input, output) {
     
     paste("The recreational F for the options above is =",RecF )
     
+    
   })
   
   
