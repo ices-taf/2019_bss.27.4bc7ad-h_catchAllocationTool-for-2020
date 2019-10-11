@@ -10,7 +10,7 @@
   # Fbar of recreational fishery in 2012
   Fbar_rec_2012 <- 0.0604
   # Fbar of recreational fishery in 2019
-  Fbar_rec_2019 <- 0.0093
+  Fbar_rec_2019 <- 0.019
   # F at age of recreational fishery in 2019
   F_age_rec_2019 <- c(0.000,0.000,0.001,
                       0.001,0.006,0.013,0.013,
