@@ -46,11 +46,11 @@ server <- function(input, output) {
   
   
   output$vx <- renderUI({
-    selectInput("OpenSeason", "Select duration of open season", choices = c("0 months","3 months","6 months","7 months","9 months","10 months","12 months"))
+    selectInput("OpenSeason", "Select duration of open season", choices = c("0 months","3 months","6 months","7 months","9 months","10 months","12 months"),selected=1)
   })
   
   output$vy <- renderUI({
-    selectInput("BagLimit", "Select Bag Limit size", choices = c("0 Fish","1 Fish","2 Fish","3 Fish","4 Fish","5 Fish"))
+    selectInput("BagLimit", "Select Bag Limit size", choices = c("0 Fish","1 Fish","2 Fish","3 Fish","4 Fish","5 Fish"),selected=1)
   })
   
   vals <- reactiveValues()
