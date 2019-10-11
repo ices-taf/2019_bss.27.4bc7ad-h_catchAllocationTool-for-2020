@@ -5,6 +5,8 @@
   require(shiny)
   require(rhandsontable)
   
+  RecFs <- read.csv("data/BagLimitFs.csv")
+  
 rowNames<-c(month.name,"TOTAL")
 
 defaultDF<- data.frame(
@@ -39,6 +41,30 @@ server <- function(input, output) {
     rhandsontable(values$data, rowHeaderWidth = 100) %>%
       hot_row(nrow(values$data), readOnly = TRUE)
     
+    
+  })
+  
+  
+  output$vx <- renderUI({
+    selectInput("OpenSeason", "Select duration of open season", choices = c("0 months","3 months","6 months","7 months","9 months","10 months","12 months"))
+  })
+  
+  output$vy <- renderUI({
+    selectInput("BagLimit", "Select Bag Limit size", choices = c("0 Fish","1 Fish","2 Fish","3 Fish","4 Fish","5 Fish"))
+  })
+  
+  vals <- reactiveValues()
+  observe({
+    vals$vx  <- input$OpenSeason
+    vals$vy<- input$BagLimit
+  })
+  
+  # Line that fetches the correct value for recreational F depending on the selections made
+  output$RecF <- renderText({
+    RecTemp <- RecFs[grepl(as.numeric(substring(vals$vx,1,2)),RecFs$OpenSeason, ignore.case = TRUE),]
+    RecF<- RecTemp[1,as.numeric(substring(vals$vy,1,1))+2]
+    
+    paste("The recreational F for the options above is =",RecF )
     
   })
   

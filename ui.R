@@ -13,6 +13,16 @@ ui <- fluidPage(
     
     sidebarPanel(
       
+      
+      # select input with the list of datasets
+      uiOutput("vx"), # vx is coming from renderUI in server.r
+      br(),
+      uiOutput("vy"), # vy is coming from renderUI in server.r
+      textOutput("RecF"),
+    
+      br(),
+      br(),
+      
       helpText("Select the allowances for each gear."),
       
       
