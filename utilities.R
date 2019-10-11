@@ -13,7 +13,8 @@ calc_catches <- function(data, input, fmults) {
     ) %>%
     ungroup() %>%
     mutate(
-      catch_n = n * (1-exp(-z)) * fmult * Selectivity / z
+      catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) + # need to make sure recreational is not anymore in the gear list
+        n * (1-exp(-z)) * f_age_rec_2020/ z
     )
 }
 
