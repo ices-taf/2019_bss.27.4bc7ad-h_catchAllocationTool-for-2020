@@ -5,7 +5,7 @@
   require(shiny)
   require(rhandsontable)
   
-  RecFs <- read.csv("data/BagLimitFs.csv")
+  RecFs <- read.csv("data/Recreational/BagLimitFs.csv")
   
 rowNames<-c(month.name,"TOTAL")
 
