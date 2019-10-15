@@ -35,7 +35,7 @@ objective_func <- function(log_fmults, catches, data, pop, Frec) {
 }
 
 
-##### Colin's original functions 
+##### Colin's original functions (altered for recreational by GL)
 
 calc_catches <- function(data, input, fmults) {
   
@@ -52,8 +52,10 @@ calc_catches <- function(data, input, fmults) {
     ) %>%
     ungroup() %>%
     mutate(
-      catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) + # need to make sure recreational is not anymore in the gear list
-        n * (1-exp(-z)) * f_age_rec_2020/ z
+      catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) # 
+      #  n * (1-exp(-z)) * f_age_rec_2020/ z # that was added by GL by mistake here -  
+      # still need to make sure recreational is not anymore in the gear list
+      # and that catch_n is also calculated for recreational but based on f_age_rec_2020 and no need for optimising
     )
 }
 
