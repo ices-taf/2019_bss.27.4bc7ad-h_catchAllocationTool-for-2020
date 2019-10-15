@@ -1,12 +1,28 @@
-  require(dplyr)
-  
-  require(ggplot2)
-  
-  require(shiny)
-  require(rhandsontable)
-  
-  RecFs <- read.csv("data/BagLimitFs.csv")
-  
+require(dplyr)
+
+require(ggplot2)
+
+require(shiny)
+require(rhandsontable)
+
+RecFs <- read.csv("data/Recreational/BagLimitFs.csv")
+
+# Fbar of recreational fishery in 2012
+Fbar_rec_2012 <- 0.0604
+# Fbar of recreational fishery in 2019
+Fbar_rec_2019 <- 0.019
+# F at age of recreational fishery in 2019
+F_age_rec_2019 <- c(0.000,0.000,0.001,0.001,0.006,0.013,0.013,0.023,0.015,0.022,0.020,
+                    0.023,0.024,0.021,0.022,0.023,0.025)
+
+# natural mortality per year
+M <- 0.24
+
+# ICES advice
+ICESadv <- 1806 #tonnes
+ICESadvHigh <- 1946
+ICESadvLow <- 1634
+
 rowNames<-c(month.name,"TOTAL")
 
 defaultDF<- data.frame(
@@ -23,8 +39,6 @@ defaultDF<- data.frame(
 server <- function(input, output) {
   
   
-  
-
   values <- reactiveValues(data = defaultDF) ## assign it with NULL
   
   ## changes in numericInput sets all (!) new values
@@ -71,30 +85,21 @@ server <- function(input, output) {
   
   
   #source("seabass-management-tool-age/utilities.R")
-  
   source("utilities.R")
-  
-  
-  
-  # natural mortality per time step
-  
-  M <- 0.24
-  
-  
   
   # read initial population
   
-  #pop_age <- read.csv("seabass-management-tool-age/data/pop_age.csv")
-  
+  #pop_age_2020 <- read.csv("seabass-management-tool-age/data/pop_age_2020.csv")
   #selectivity_age <- read.csv("seabass-management-tool-age/data/selectivity_age.csv")
-  
   #weights_age <- read.csv("seabass-management-tool-age/data/weights_age.csv")
   
-  pop_age <- read.csv("data/pop_age.csv")
-  
+  pop_age_2020 <- read.csv("data/pop_age_2020.csv")
   selectivity_age <- read.csv("data/selectivity_age.csv")
-  
   weights_age <- read.csv("data/weights_age.csv")
+  
+  # calculate F mult recreational based on management measures
+  f_age_rec_2020 <- cbind.data.frame(Age= weights_age$Age[1:length(F_age_rec_2019)], 
+                                     f_age_rec_2020 = RecF*F_age_rec_2019*Fbar_rec_2012/Fbar_rec_2019)
   
   
   
@@ -104,10 +109,16 @@ server <- function(input, output) {
     
     left_join(weights_age) %>%
     
-    left_join(pop_age) %>%
+    left_join(pop_age_2020) %>%
     
-    mutate(M = M)
+    mutate(M = M) %>%
+    
+    left_join(f_age_rec_2020) 
   
+  
+  # at the moment pop age is to age 20 and selex for recreational to age 16 - temp fix
+  dat$f_age_rec_2020[is.na(dat$f_age_rec_2020)] <- 
+    max(dat$f_age_rec_2020[!is.na(dat$f_age_rec_2020)] )
   
   
   # set up fixed values
@@ -232,7 +243,7 @@ server <- function(input, output) {
   
   output$n_plot <- renderPlot({
     
-    ggplot(pop_age, aes(x = Age, y = n)) + 
+    ggplot(pop_age_2020, aes(x = Age, y = n)) + 
       
       geom_line()
     

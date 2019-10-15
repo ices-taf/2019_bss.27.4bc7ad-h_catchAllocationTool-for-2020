@@ -1,3 +1,42 @@
+# Function to optimis fleet Fmults to take the specified catches
+# When optimising fmults, repress is set to T
+gearCatches <- function(fmults, dat, pop, Frec, repress=T){
+  gears <- unique(dat$gear)
+  M <- dat$M[1]
+    
+  fmort <- matrix(0,nrow=21,ncol=length(gears), dimnames=list(c(0:20), gears))
+  for (gg in 1:length(gears)) fmort[1:sum(dat$gear==gears[gg]),gg] <- fmults[gg]*dat[dat$gear==gears[gg],"Selectivity"]
+  zmort <- apply(fmort,1,sum) + Frec[,2] + M
+  
+  projCatch <- fmort[1,]; projCatch[] <- 0
+  for (gg in 1:length(gears)) {
+    datLen <- length(dat[dat$gear==gears[gg], "Selectivity"])
+    projCatch[gg] <- sum((pop[1:datLen]*(1-exp(-zmort[1:datLen])) * dat[dat$gear==gears[gg], "Weight"]) * (fmort[1:datLen,gg]/zmort[1:datLen]),na.rm=T)
+  }
+  
+  #return(sum((tac - sum((data$N[1:nrow(data)]*(1-exp(-zmort)) * data$Weight) * (fmort/zmort),na.rm=T))^2 ) )
+  if (repress) return(projCatch)
+  if (!repress)
+  {
+    catchN <- matrix(0,nrow=21,ncol=length(gears), dimnames=list(c(0:20), gears))
+    for (gg in 1:length(gears)) {
+      datLen <- length(dat[dat$gear==gears[gg], "gear"])
+      catchN[1:datLen,gg] <- pop[1:datLen]*(1-exp(-zmort[1:datLen])) * (fmort[1:datLen,gg]/zmort[1:datLen])
+    }
+    
+    return(list(gearCatches=projCatch, catch_n=catchN, catch_f=fmort,catch_z=zmort))
+  }
+  
+}
+
+# Objective function for optimising fmults (sum of squares) 
+objective_func <- function(log_fmults, catches, data, pop, Frec) {
+  sum((gearCatches(log_fmults, data, pop, Frec, repress=T) - catches)^2)
+}
+
+
+##### Colin's original functions 
+
 calc_catches <- function(data, input, fmults) {
   
   data %>%
@@ -9,13 +48,15 @@ calc_catches <- function(data, input, fmults) {
       ), by = "gear") %>%
     group_by(Age) %>%
     mutate(
-      z = sum(fmult * Selectivity) + M
+      z = sum(fmult * Selectivity) + M + sum(f_age_rec_2020)
     ) %>%
     ungroup() %>%
     mutate(
-      catch_n = n * (1-exp(-z)) * fmult * Selectivity / z
+      catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) + # need to make sure recreational is not anymore in the gear list
+        n * (1-exp(-z)) * f_age_rec_2020/ z
     )
 }
+
 
 totals <- function(data, input, fmults) {
   out <- 
