@@ -57,12 +57,13 @@ M <- Myr/12
 
 ## ICES advice (http://ices.dk/sites/pub/Publication%20Reports/Advice/2019/2019/bss.27.4bc7ad-h.pdf)
 # Commercial catches (landings + discards) - limits amount that can be caught
-ICESadv <- 1480 + 118 # Comm land + disc # 1806 #tonnes
+ICESmsy <- 1445 + 89 # Comm land + disc # 1806 #tonnes
 # Recreational catches from catch scenario (not used as a limit, just for comparison)
-ICESrec <- 207
+ICESadvHighrec <- 412
+ICESadvLowrec <- 346
 # Could include commercial options for MAP
-ICESadvHigh <- 1946 - ICESrec
-ICESadvLow <- 1634 - ICESrec
+ICESadvHigh <- 1946 - ICESadvHighrec
+ICESadvLow <- 1634 - ICESadvLowrec
 
 #####-------------------------
 ### Create default objects
