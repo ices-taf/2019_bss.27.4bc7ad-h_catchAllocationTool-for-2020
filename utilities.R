@@ -1,8 +1,8 @@
 # Function to optimis fleet Fmults to take the specified catches
 # When optimising fmults, repress is set to T
-gearCatches <- function(fmults, dat, pop, Frec, repress=T){
+gearCatches <- function(fmults, dat, pop, Frec, M, repress=T){
   gears <- unique(dat$gear)
-  M <- dat$M[1]
+  #M <- dat$M[1]
     
   fmort <- matrix(0,nrow=21,ncol=length(gears), dimnames=list(c(0:20), gears))
   for (gg in 1:length(gears)) fmort[1:sum(dat$gear==gears[gg]),gg] <- fmults[gg]*dat[dat$gear==gears[gg],"Selectivity"]
@@ -24,16 +24,15 @@ gearCatches <- function(fmults, dat, pop, Frec, repress=T){
       catchN[1:datLen,gg] <- pop[1:datLen]*(1-exp(-zmort[1:datLen])) * (fmort[1:datLen,gg]/zmort[1:datLen])
     }
     
-    return(list(gearCatches=projCatch, catch_n=catchN, catch_f=fmort,catch_z=zmort))
+    return(list(gearCatches=projCatch, catch_n=catchN, catch_f=fmort,total_z=zmort))
   }
   
 }
 
 # Objective function for optimising fmults (sum of squares) 
-objective_func <- function(log_fmults, catches, data, pop, Frec) {
-  sum((gearCatches(log_fmults, data, pop, Frec, repress=T) - catches)^2)
+objective_func <- function(log_fmults, catches, data, M, Frec, pop) {
+  sum((gearCatches(fmults=log_fmults, dat=data, pop=pop, Frec=Frec, M=M, repress=T) - catches)^2)
 }
-
 
 ##### Colin's original functions (altered for recreational by GL)
 

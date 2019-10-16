@@ -57,7 +57,7 @@ M <- Myr/12
 
 ## ICES advice (http://ices.dk/sites/pub/Publication%20Reports/Advice/2019/2019/bss.27.4bc7ad-h.pdf)
 # Commercial catches (landings + discards) - limits amount that can be caught
-ICESmsy <- 1445 + 89 # Comm land + disc # 1806 #tonnes
+ICESadv <- 1445 + 89 # MSY advice Comm land + disc # 1806 #tonnes
 # Recreational catches from catch scenario (not used as a limit, just for comparison)
 ICESadvHighrec <- 412
 ICESadvLowrec <- 346
@@ -164,7 +164,12 @@ server <- function(input, output) {
   #TEMP# INPUT$CatchGear replaces input/ouput$CatchGear, which comes from the hands on table code below
   # This data file is not needed for the shiny operation
   INPUT$CatchGear <- read.csv("seabass-management-tool-age/data/CatchGear.csv")
+  # This should come from a checkbox specifying if monthly values are used or not. If not, input table should only show TOTALs.
+  INPUT$Monthly <- T
+  
   catches <- INPUT$CatchGear
+  # Calculate TOTAL
+  catches[13,-1] <- apply(catches[1:12,-1],2,sum)
   
   #####-------------------------
   ### Get fleet catches from input
@@ -215,6 +220,7 @@ server <- function(input, output) {
   
   #####-------------------------
   ### Monthly forecast
+  if (INPUT$Monthly) {
   
   # list to store results
   out <- list()
@@ -241,24 +247,62 @@ server <- function(input, output) {
                  objective_func, 
                  catches = catches[i,-1],
                  data = dat,
+                 M=M,
                  Frec = f_age_rec_2020,
                  pop=initPop[,months[i]])
     fmults <- opt$par
     
     # Use optimised fmults to get catch.n, commercial F and total Z 
-    tmp <- gearCatches(fmults,dat, initPop[,i], f_age_rec_2020, repress=F)
+    tmp <- gearCatches(fmults,dat, initPop[,i], f_age_rec_2020, M, repress=F)
     # Get recreational catch at age and total catch
-    tmp$catchRec_n <- initPop[,i]*(1-exp(-tmp$catch_z)) * (f_age_rec_2020[,2]/tmp$catch_z)
+    tmp$catchRec_n <- initPop[,i]*(1-exp(-tmp$total_z)) * (f_age_rec_2020[,2]/tmp$total_z)
     tmp$recCatches <- sum(tmp$catchRec_n*weights_age[,2])
     
     # Project population forward one month
     # Note, ages unchanged, for Jan2021 shifted one age older after this loop
-    initPop[,i+1] <- initPop[,i]*exp(-tmp$catch_z)
+    initPop[,i+1] <- initPop[,i]*exp(-tmp$total_z)
     
     # Save monthly results in list
     out[[i]] <- tmp; rm(tmp)
     
-  } # end of month loop
+  } # end of loop over months
+  
+  } # END of Monthly simulation
+
+  #####-------------------------
+  ### Annual forecast
+  if (!INPUT$Monthly) {
+    
+    # list to store results
+    out <- list()
+    
+    # Cap catches at ICES advice
+    if (ICESadv < sum(catches[13,-1])) catches[13,-1] <- catches[13,-1] * (ICESadv/sum(catches[13,-1]))
+    
+    # optimise Fmults to take the catches specified
+    opt <- optim(rep(0, length(catches)), 
+                 objective_func, 
+                 catches = catches[13,-1],
+                 data = dat,
+                 M = Myr,
+                 Frec = f_age_rec_2020*12,
+                 pop=initPop[,1])
+    fmults <- opt$par
+    
+    # Use optimised fmults to get catch.n, commercial F and total Z 
+    tmp <- gearCatches(fmults=fmults,dat=dat, pop=initPop[,1], Frec=f_age_rec_2020*12, M=Myr, repress=F)
+    # Get recreational catch at age and total catch
+    tmp$catchRec_n <- initPop[,1]*(1-exp(-tmp$total_z)) * ((12*f_age_rec_2020[,2])/tmp$total_z)
+    tmp$recCatches <- sum(tmp$catchRec_n*weights_age[,2])
+    
+    # Project population forward one month
+    # Note, ages unchanged, for Jan2021 shifted one age older after this loop
+    initPop[,13] <- initPop[,1]*exp(-tmp$total_z)
+    
+    # Save monthly results in list
+    out[[1]] <- tmp; rm(tmp)
+    
+  } # END of Annual simulation
   
   #####-------------------------
   ### Sort results
@@ -266,14 +310,25 @@ server <- function(input, output) {
   # Commercial catches
   asked <- INPUT$CatchGear[,-1]
   realised <- asked; realised[] <- 0
-  for (i in 1:(length(months)-1)) realised[i,] <- out[[i]]$gearCatches
+  if (INPUT$Monthly) {
+    for (i in 1:(length(months)-1)) realised[i,] <- out[[i]]$gearCatches
+    realised[13,] <- apply(realised[-13,],2,sum) 
+    }
+  if (!INPUT$Monthly) realised[13,] <- out[[1]]$gearCatches
   # round the values (have many decimals due to optimising Fmults)
   realised <- round(realised,0)
-  totCommCatch <- sum(realised)
+  totCommCatch <- sum(realised[13,])
+  
+  # Catch at age
+  catch_n <- out[[1]]$catch_n
+  if (INPUT$Monthly) for (i in 2:(length(months)-1)) catch_n <- catch_n + out[[i]]$catch_n 
+  catch_n <- cbind(catch_n, out[[1]]$catchRec_n)
+  dimnames(catch_n)[[2]][6] <- "Recreational"
+  if (INPUT$Monthly) for (i in 2:(length(months)-1)) catch_n[,"Recreational"] <- catch_n[,"Recreational"] + out[[i]]$catchRec_n 
   
   # Commercial F and Fbar
   annualF <- out[[1]]$catch_f  
-  for (i in 2:(length(months)-1)) annualF <- annualF + out[[i]]$catch_f   
+  if (INPUT$Monthly) for (i in 2:(length(months)-1)) annualF <- annualF + out[[i]]$catch_f   
   Fcomm <- apply(annualF,1,sum)  
   Fcommbar <- mean(Fcomm[5:16])
   # ICES rounding
@@ -281,13 +336,22 @@ server <- function(input, output) {
   
   # Annual recreational catch
   recCatch <- out[[1]]$recCatches  
-  for (i in 2:(length(months)-1)) recCatch <- recCatch + out[[i]]$recCatches 
+  if (INPUT$Monthly) for (i in 2:(length(months)-1)) recCatch <- recCatch + out[[i]]$recCatches 
+  
+  # Catch including recreational
+  realised <- cbind(realised, realised[,1]); realised[,6] <- 0
+  dimnames(realised)[[2]][6] <- "Recreational"; 
+  realised[13,6] <- out[[1]]$recCatches  
+  if (INPUT$Monthly) {
+    for (i in 1:(length(months)-1)) realised[i,6] <- out[[i]]$recCatches 
+    realised[13,6] <- sum(realised[1:12,6])
+    }
+  realised <- round(realised,0)
   
   # Change ages for Jan 2021
   #initPop[,1] * exp(-(commF+(f_age_rec_2020[,2]*12)+Myr))
   initPop[nrow(initPop),13] <- initPop[nrow(initPop),13] + initPop[nrow(initPop)-1,13] 
   initPop[1:(nrow(initPop)-1),13] <- c(0,initPop[1:(nrow(initPop)-2),13])
-  
   
   #####-------------------------
   ### Show outputs
