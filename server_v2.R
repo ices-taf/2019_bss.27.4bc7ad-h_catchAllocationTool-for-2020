@@ -118,7 +118,7 @@ server <- function(input, output) {
   # })
   # 
   # output$vy <- renderUI({
-  #   selectInput("BagLimit", "Select Bag Limit size", choices = c("0 Fish","1 Fish","2 Fish","3 Fish","4 Fish","5 Fish"),selected=1)
+  #   selectInput("BagLimit", "Select Bag Limit size", choices = c("1 Fish","2 Fish","3 Fish","4 Fish","5+ Fish"),selected=1)
   # })
   # 
   # vals <- reactiveValues()
