@@ -4,24 +4,22 @@ gearCatches <- function(fmults, dat, pop, Frec, M, repress=T){
   gears <- unique(dat$gear)
   #M <- dat$M[1]
     
-  fmort <- matrix(0,nrow=21,ncol=length(gears), dimnames=list(c(0:20), gears))
-  for (gg in 1:length(gears)) fmort[1:sum(dat$gear==gears[gg]),gg] <- fmults[gg]*dat[dat$gear==gears[gg],"Selectivity"]
+  fmort <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
+  for (gg in 1:length(gears)) fmort[,gg] <- fmults[gg]*dat[dat$gear==gears[gg],"Selectivity"]
   zmort <- apply(fmort,1,sum) + Frec[,2] + M
   
   projCatch <- fmort[1,]; projCatch[] <- 0
   for (gg in 1:length(gears)) {
-    datLen <- length(dat[dat$gear==gears[gg], "Selectivity"])
-    projCatch[gg] <- sum((pop[1:datLen]*(1-exp(-zmort[1:datLen])) * dat[dat$gear==gears[gg], "Weight"]) * (fmort[1:datLen,gg]/zmort[1:datLen]),na.rm=T)
+    projCatch[gg] <- sum((pop*(1-exp(-zmort)) * dat[dat$gear==gears[gg], "Weight"]) * (fmort[,gg]/zmort),na.rm=T)
   }
   
   #return(sum((tac - sum((data$N[1:nrow(data)]*(1-exp(-zmort)) * data$Weight) * (fmort/zmort),na.rm=T))^2 ) )
   if (repress) return(projCatch)
   if (!repress)
   {
-    catchN <- matrix(0,nrow=21,ncol=length(gears), dimnames=list(c(0:20), gears))
+    catchN <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
     for (gg in 1:length(gears)) {
-      datLen <- length(dat[dat$gear==gears[gg], "gear"])
-      catchN[1:datLen,gg] <- pop[1:datLen]*(1-exp(-zmort[1:datLen])) * (fmort[1:datLen,gg]/zmort[1:datLen])
+      catchN[,gg] <- pop*(1-exp(-zmort)) * (fmort[,gg]/zmort)
     }
     
     return(list(gearCatches=projCatch, catch_n=catchN, catch_f=fmort,total_z=zmort))

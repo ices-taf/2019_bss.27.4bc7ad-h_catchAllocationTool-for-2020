@@ -2,7 +2,7 @@
 ### Issues
 #- Should we work with 0-16+ or 0-20(+). N@A from forecast for 2020 goes to 16, most selectivities go to age 19, for recreational to 16.
 # current simulation assumes zero selectivity for age 20, but this could be flat topped (i.e. = sel for age 19)
-#- Use recreational mean weights for use in forecast? Currently only using human consump mean weights.
+#- FIXED - Use recreational mean weights for use in forecast? Currently only using human consump mean weights.
 #- Only catch selectivities for different gears. May need retention at age proportions for the fleets to calculate landings/discard quanitites
 #- Include a button/checkbox to specify which advice to limit catches? (e.g. MAP upper or lower or Fmsy advice?)
 #- No seasonality in recreational
@@ -29,18 +29,15 @@ source("seabass-management-tool-age/utilities.R")
 pop_age_2020 <- read.csv("seabass-management-tool-age/data/pop_age_2020.csv")
 # H.Cons Retained mean weights from 'Bass47_STF 2019 assessment 20190514.xlsx'
 weights_age <- read.csv("seabass-management-tool-age/data/weights_age.csv")
+weights_age_rec <- read.csv("seabass-management-tool-age/data/weights_age_rec.csv")
 
 ## Fleet selectivity by age
 # assuming this is catch selectivity (i.e. L+D)
-selectivity_age <- read.csv("seabass-management-tool-age/data/selectivity_age.csv")
-
-#pop_age_2020 <- read.csv("data/pop_age_2020.csv")
-#selectivity_age <- read.csv("data/selectivity_age.csv")
-#weights_age <- read.csv("data/weights_age.csv")
+selectivity_age <- read.csv("seabass-management-tool-age/data/selectivity_age_16+.csv")
 
 ## Recreational fisheries
 # F multipliers for bag limits and closed seasons
-RecFs <- read.csv("data/Recreational/BagLimitFs.csv")
+RecFs <- read.csv("seabass-management-tool-age/data/BagLimitFs.csv")
 # Fbar of recreational fishery in 2012
 Fbar_rec_2012 <- 0.0604
 # Fbar of recreational fishery in 2019
@@ -48,6 +45,9 @@ Fbar_rec_2019 <- 0.019
 # F at age of recreational fishery in 2019
 F_age_rec_2019 <- c(0.000,0.000,0.001,0.001,0.006,0.013,0.013,0.023,0.015,0.022,0.020,
                     0.023,0.024,0.021,0.022,0.023,0.025)
+# Z at age from the ICES advice forecasts
+# This is used to estimate total Recreational catch
+Advice_Z_age_2020 <- read.csv("seabass-management-tool-age/data/ICESadvice_Forecast_Zs.csv")
 
 ## Natural mortality 
 # per year
@@ -56,14 +56,12 @@ Myr <- 0.24
 M <- Myr/12
 
 ## ICES advice (http://ices.dk/sites/pub/Publication%20Reports/Advice/2019/2019/bss.27.4bc7ad-h.pdf)
-# Commercial catches (landings + discards) - limits amount that can be caught
-ICESadv <- 1445 + 89 # MSY advice Comm land + disc # 1806 #tonnes
+# Options for MAP
+ICESadvMSY <- 1946
+ICESadvMSYlow <- 1634
 # Recreational catches from catch scenario (not used as a limit, just for comparison)
-ICESadvHighrec <- 412
-ICESadvLowrec <- 346
-# Could include commercial options for MAP
-ICESadvHigh <- 1946 - ICESadvHighrec
-ICESadvLow <- 1634 - ICESadvLowrec
+ICESadvMSYRec <- 412
+ICESadvMSYlowRec <- 346
 
 #####-------------------------
 ### Create default objects
@@ -86,9 +84,16 @@ defaultDF<- data.frame(
 server <- function(input, output) {
 
   #####-------------------------
+  ### Get Advice
+  #TEMP# INPUT$ICESadvOpt replaces input$ICESadvOpt, which should comes from checkbox
+  INPUT <- list()
+  INPUT$ICESadvOpt <- "MSY"
+  
+  if (INPUT$ICESadvOpt=="MSY") INPUT$ICESadv <- ICESadvMSY else INPUT$ICESadv <- ICESadvMSYlow 
+  
+  #####-------------------------
   ### Get Recreational F
   #TEMP# INPUT$RecF replaces input$RecF, which comes from the blocked code below
-  INPUT <- list()
   INPUT$RecF <- RecFs[3,3]
   
   # values <- reactiveValues(data = defaultDF) ## assign it with NULL
@@ -134,13 +139,21 @@ server <- function(input, output) {
   #####-------------------------
   ### calculate recreational F based on management measures
   # uses selected multiplier and 2012+2019 F@A and Fbar to estimate 2020 F@A
-  f_age_rec_2020 <- cbind.data.frame(Age= weights_age$Age[1:length(F_age_rec_2019)], 
+  f_age_rec_2020 <- cbind.data.frame(Age= weights_age_rec$Age[1:length(F_age_rec_2019)], 
                                      f_age_rec_2020 = INPUT$RecF*F_age_rec_2019*Fbar_rec_2012/Fbar_rec_2019)
-  #TEMP# at the moment pop age is to age 20 and selex for recreational to age 16
-  tmp <- f_age_rec_2020[1:4,]; tmp$Age <- 17:20; tmp$f_age_rec_2020 <- max(f_age_rec_2020[,"f_age_rec_2020"])
-  f_age_rec_2020 <- rbind(f_age_rec_2020,tmp); rm(tmp)
-  # Change to monthly values assuming no seasonality
-  f_age_rec_2020[,"f_age_rec_2020"] <- f_age_rec_2020[,"f_age_rec_2020"]/12
+  # Mean F for recreational ages 4-15
+  FbarRec <- mean(f_age_rec_2020[5:16,2])
+  
+  # Monthly F values to use as estimates of recreational mortality in the monthly forecast (final rec catch values determined from annually below)
+  f_age_rec_2020_month <- f_age_rec_2020; f_age_rec_2020_month[,2] <- f_age_rec_2020_month[,2]/12
+  
+  # Get recreational catch at age and total catch
+  if(INPUT$ICESadvOpt=="MSY") totZ <- Advice_Z_age_2020[,"MSY_Z"] else totZ <- Advice_Z_age_2020[,"MSYlow_Z"]
+  catchRec_n <- pop_age_2020[,"N"]*(1-exp(-totZ)) * ((f_age_rec_2020[,2])/totZ)
+  recCatch <- sum(catchRec_n*weights_age_rec[,2])
+  
+  # Calculate what is left for the commercial fleets
+  INPUT$ICESadvComm <- INPUT$ICESadv - recCatch  
   
   #####-------------------------
   ### Prepare data objects
@@ -155,21 +168,22 @@ server <- function(input, output) {
   gears <- unique(selectivity_age$gear)
   
   # Population matrix (Jan 2020 to Jan 2021)
-  initPop <- matrix(NA,21,13,dimnames=list(c(0:20),months)) 
+  initPop <- matrix(NA,17,13,dimnames=list(c(0:15,"16+"),months)) 
   initPop[,1] <- pop_age_2020[,"N"]
   
   #####-------------------------
   ##### Function to calculate difference between sp and fishing at a given F
   
+  #TEMP# This should come from a checkbox specifying if monthly values are used or not. If not, input table should only show TOTALs.
+  INPUT$Monthly <- F
+  
   #TEMP# INPUT$CatchGear replaces input/ouput$CatchGear, which comes from the hands on table code below
   # This data file is not needed for the shiny operation
   INPUT$CatchGear <- read.csv("seabass-management-tool-age/data/CatchGear.csv")
-  # This should come from a checkbox specifying if monthly values are used or not. If not, input table should only show TOTALs.
-  INPUT$Monthly <- T
+  # Calculate TOTAL
+  INPUT$CatchGear[13,-1] <- apply(INPUT$CatchGear[1:12,-1],2,sum)
   
   catches <- INPUT$CatchGear
-  # Calculate TOTAL
-  catches[13,-1] <- apply(catches[1:12,-1],2,sum)
   
   #####-------------------------
   ### Get fleet catches from input
@@ -234,7 +248,7 @@ server <- function(input, output) {
     if (switch) {
       caught <- 0
       if (i>1) for (ii in 1:(i-1)) caught <- caught + sum(out[[ii]]$gearCatches)
-      remaining <- ICESadv-caught
+      remaining <- INPUT$ICESadvComm-caught
       if (remaining < sum(catches[i,-1])) {
         catches[i,-1] <- catches[i,-1] * (remaining/sum(catches[i,-1]))
         for (ii in (i+1):(length(months)-1)) catches[ii,-1] <- 0
@@ -248,15 +262,15 @@ server <- function(input, output) {
                  catches = catches[i,-1],
                  data = dat,
                  M=M,
-                 Frec = f_age_rec_2020,
+                 Frec = f_age_rec_2020_month,
                  pop=initPop[,months[i]])
     fmults <- opt$par
     
     # Use optimised fmults to get catch.n, commercial F and total Z 
-    tmp <- gearCatches(fmults,dat, initPop[,i], f_age_rec_2020, M, repress=F)
-    # Get recreational catch at age and total catch
-    tmp$catchRec_n <- initPop[,i]*(1-exp(-tmp$total_z)) * (f_age_rec_2020[,2]/tmp$total_z)
-    tmp$recCatches <- sum(tmp$catchRec_n*weights_age[,2])
+    tmp <- gearCatches(fmults,dat, initPop[,i], f_age_rec_2020_month, M, repress=F)
+    # # Get recreational catch at age and total catch
+    # tmp$catchRec_n <- initPop[,i]*(1-exp(-tmp$total_z)) * (f_age_rec_2020[,2]/tmp$total_z)
+    # tmp$recCatches <- sum(tmp$catchRec_n*weights_age_rec[,2])
     
     # Project population forward one month
     # Note, ages unchanged, for Jan2021 shifted one age older after this loop
@@ -277,7 +291,7 @@ server <- function(input, output) {
     out <- list()
     
     # Cap catches at ICES advice
-    if (ICESadv < sum(catches[13,-1])) catches[13,-1] <- catches[13,-1] * (ICESadv/sum(catches[13,-1]))
+    if (INPUT$ICESadvComm < sum(catches[13,-1])) catches[13,-1] <- catches[13,-1] * (INPUT$ICESadvComm/sum(catches[13,-1]))
     
     # optimise Fmults to take the catches specified
     opt <- optim(rep(0, length(catches)), 
@@ -285,16 +299,16 @@ server <- function(input, output) {
                  catches = catches[13,-1],
                  data = dat,
                  M = Myr,
-                 Frec = f_age_rec_2020*12,
+                 Frec = f_age_rec_2020,
                  pop=initPop[,1])
     fmults <- opt$par
     
     # Use optimised fmults to get catch.n, commercial F and total Z 
-    tmp <- gearCatches(fmults=fmults,dat=dat, pop=initPop[,1], Frec=f_age_rec_2020*12, M=Myr, repress=F)
-    # Get recreational catch at age and total catch
-    tmp$catchRec_n <- initPop[,1]*(1-exp(-tmp$total_z)) * ((12*f_age_rec_2020[,2])/tmp$total_z)
-    tmp$recCatches <- sum(tmp$catchRec_n*weights_age[,2])
-    
+    tmp <- gearCatches(fmults=fmults,dat=dat, pop=initPop[,1], Frec=f_age_rec_2020, M=Myr, repress=F)
+    # # Get recreational catch at age and total catch
+    # tmp$catchRec_n <- initPop[,1]*(1-exp(-tmp$total_z)) * ((f_age_rec_2020[,2])/tmp$total_z)
+    # tmp$recCatches <- sum(tmp$catchRec_n*weights_age_rec[,2])
+
     # Project population forward one month
     # Note, ages unchanged, for Jan2021 shifted one age older after this loop
     initPop[,13] <- initPop[,1]*exp(-tmp$total_z)
@@ -322,30 +336,25 @@ server <- function(input, output) {
   # Catch at age
   catch_n <- out[[1]]$catch_n
   if (INPUT$Monthly) for (i in 2:(length(months)-1)) catch_n <- catch_n + out[[i]]$catch_n 
-  catch_n <- cbind(catch_n, out[[1]]$catchRec_n)
+  catch_n <- cbind(catch_n, catchRec_n)
   dimnames(catch_n)[[2]][6] <- "Recreational"
-  if (INPUT$Monthly) for (i in 2:(length(months)-1)) catch_n[,"Recreational"] <- catch_n[,"Recreational"] + out[[i]]$catchRec_n 
   
   # Commercial F and Fbar
   annualF <- out[[1]]$catch_f  
   if (INPUT$Monthly) for (i in 2:(length(months)-1)) annualF <- annualF + out[[i]]$catch_f   
   Fcomm <- apply(annualF,1,sum)  
-  Fcommbar <- mean(Fcomm[5:16])
+  Fcommbar <- mean(Fcomm[5:16]) # ages 4-15
   # ICES rounding
   if (Fcommbar<0.2) Fcommbar <- round(Fcommbar,3) else Fcommbar <- round(Fcommbar,2)
   
-  # Annual recreational catch
-  recCatch <- out[[1]]$recCatches  
-  if (INPUT$Monthly) for (i in 2:(length(months)-1)) recCatch <- recCatch + out[[i]]$recCatches 
+  # Annual recreational catch and F
+  # recCatch
+  # FbarRec
   
   # Catch including recreational
-  realised <- cbind(realised, realised[,1]); realised[,6] <- 0
+  realised <- cbind(realised, realised[,1]); realised[,6] <- NA
   dimnames(realised)[[2]][6] <- "Recreational"; 
-  realised[13,6] <- out[[1]]$recCatches  
-  if (INPUT$Monthly) {
-    for (i in 1:(length(months)-1)) realised[i,6] <- out[[i]]$recCatches 
-    realised[13,6] <- sum(realised[1:12,6])
-    }
+  realised[13,6] <- recCatch  
   realised <- round(realised,0)
   
   # Change ages for Jan 2021
