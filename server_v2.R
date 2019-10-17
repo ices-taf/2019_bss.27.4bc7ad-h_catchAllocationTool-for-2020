@@ -40,7 +40,7 @@ selectivity_age <- read.csv("seabass-management-tool-age/data/selectivity_age.cs
 
 ## Recreational fisheries
 # F multipliers for bag limits and closed seasons
-RecFs <- read.csv("data/Recreational/BagLimitFs.csv")
+RecFs <- read.csv("seabass-management-tool-age/data/BagLimitFs.csv")
 # Fbar of recreational fishery in 2012
 Fbar_rec_2012 <- 0.0604
 # Fbar of recreational fishery in 2019
