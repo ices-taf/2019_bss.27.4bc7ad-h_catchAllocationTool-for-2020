@@ -4,9 +4,7 @@ require(rhandsontable)
 ui <- fluidPage(
   
   
-  
   titlePanel("Seabass Catch Options Tool by Age"),
-  
   
   
   sidebarLayout(
@@ -14,37 +12,34 @@ ui <- fluidPage(
     sidebarPanel(
       
       
-      # select input with the list of datasets
-      uiOutput("vx"), # vx is coming from renderUI in server.r
+      radioButtons("AdviceType", label = h4("Choose Catch Advice"),
+                   choices = list("EU MAP Fmsy" = "MSY", "EU MAP Fmsy lower" = 1634), 
+                   inline= TRUE, selected = 1946),
+      
+      
+      radioButtons("TimeStep", label = h4("Choose Time Step"),
+                   choices = list("Annual" = 1, "Monthly" = 12), 
+                   inline= TRUE, selected = 1),
       br(),
+      
+      h5(helpText("Recreational management measures.")),
+      uiOutput("vx"), # vx is coming from renderUI in server.r
+      #br(),
       uiOutput("vy"), # vy is coming from renderUI in server.r
       textOutput("RecF"),
-    
       br(),
-      br(),
+      h5(helpText("Select allowances for commercial gears.")),
+      rHandsontableOutput('table')
       
-      helpText("Select the allowances for each gear."),
-      
-      
-      uiOutput("checkbox"),
-      
-      
-      
-      uiOutput("sliders"),
-      
-      rHandsontableOutput('table'),
-      textOutput('result'),
-      br(),
-      actionButton("recalc", "Set all to zero")
 
-      
+
+      ,width=5   
     ),
     
     
     mainPanel(
       
-      #textOutput("selected_var")
-      
+    
       tableOutput("values"),
       
       plotOutput("catch_plot"),
