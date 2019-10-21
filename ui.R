@@ -1,5 +1,6 @@
 require(shiny)
 require(rhandsontable)
+require(markdown)
 
 side_width <- 5
 
@@ -47,15 +48,29 @@ main_panel <-
     plotOutput("plot"),
     verbatimTextOutput("debug_text_output")
   )
+
+       
  
 # user interface
 ui <- 
   fluidPage(
-    titlePanel("Seabass Catch Options Tool by Age"),
+    #titlePanel("Seabass Catch Options Tool by Age"),
+    navbarPage("Seabass catch allocation Tool",
+      tabPanel("Instructions",
+                 verbatimTextOutput("Instructions")), 
+     tabPanel("Allocations",
     sidebarLayout(
       sidebarPanel = sidebar_panel,
       mainPanel = main_panel,
       position = "left"
-    ),
-    title = "Seabass Catch Options Tool" # title in the tab
-  )
+    )
+    
+    #title = "Seabass Catch Options Tool" # title in the tab
+
+),
+tabPanel(
+  "summary",
+  verbatimTextOutput("summary")) 
+
+)
+)
