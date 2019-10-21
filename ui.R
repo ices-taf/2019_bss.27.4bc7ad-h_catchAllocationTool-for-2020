@@ -33,6 +33,7 @@ sidebar_panel <-
     br(),
     h5(helpText("Select allowances for commercial gears.")),
 
+    actionButton("go", "Go"),
     rHandsontableOutput('table')
   )
 

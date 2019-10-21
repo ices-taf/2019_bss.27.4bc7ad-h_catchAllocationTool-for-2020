@@ -88,6 +88,8 @@ defaultDF <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# set up with default values?
+defaultDF <- read.csv("data/CatchGear.csv", row.names = 1)
 
 #####-------------------------00000000000000000000000000000000-------------------------#####
 ### SERVER function
@@ -190,16 +192,34 @@ server <- function(input, output) {
     #TEMP# INPUT$CatchGear replaces input/ouput$CatchGear, which comes from the hands on table code below
     # This data file is not needed for the shiny operation
     # Note: users specify total catch by gear (part of this will be discarded)
-    CatchGear <- read.csv("data/CatchGear.csv")
+    #CatchGear <- read.csv("data/CatchGear.csv")
+    CatchGear <- cbind(X = rowNames, hot_to_r(input$table))
     # Calculate TOTAL
     CatchGear[13,-1] <- apply(CatchGear[1:12,-1], 2, sum)
     
     catches <- CatchGear
-    
-    # replace with "action" button later
-    out <- list()
-    if (TRUE) {
-      out <- 
+
+    # return things we need
+    list(CatchGear = CatchGear,
+         FbarRec = FbarRec, 
+         recCatch = recCatch,
+         Monthly = Monthly, 
+         ICESadvComm = ICESadvComm, 
+         catches = catches,
+         f_age_rec_2020_month = f_age_rec_2020_month,
+         f_age_rec_2020 = f_age_rec_2020,
+         catchRec_n = catchRec_n,
+         recCatch = recCatch,
+         ICESadv = ICESadv,
+         ICESadvOpt = ICESadvOpt
+         )
+  })
+
+  reactiveForecast <- eventReactive(input$go, {
+
+   dat <- reactiveData()
+
+    with(dat,
         runForecast(
           months = months,
           selectivity_age = selectivity_age, 
@@ -222,11 +242,7 @@ server <- function(input, output) {
           FbarRec = FbarRec,
           AdviceForecastCatchAge = AdviceForecastCatchAge
         )
-    }
-
-    # return things we need
-    list(out = out, 
-         FbarRec = FbarRec, recCatch = recCatch)
+    )
   })
 
 
@@ -246,7 +262,7 @@ server <- function(input, output) {
  
 
   output$plot <- renderPlot({
-    reactiveData()$out$plot
+    reactiveForecast()$plot
   })
 
 
