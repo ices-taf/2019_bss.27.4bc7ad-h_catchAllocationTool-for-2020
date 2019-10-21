@@ -94,25 +94,10 @@ defaultDF <- data.frame(
 #####-------------------------00000000000000000000000000000000-------------------------#####
 server <- function(input, output) {
   source("utilities.R")
-  
-  #####-------------------------
-  ### for debugging  
-  # Don't show in final
-  
-  output$debug_text <- renderText({ 
-    txt <- 
-      lapply(setdiff(names(input), "table"), 
-             function(x) c(paste0(x, ":"), capture.output(str(input[[x]])), ""))
-    
-    txt <- unlist(txt)
-    
-    txt <- c("Debug window:", "-------------\n", txt)
-    
-    paste(txt, collapse = "\n")
-  })
+
 
   #####-------------------------
-  ### Get Input from shiny
+  ### Dynamic input sections
 
   ########-------------------------------
   #Code to select the recreational options from section boxes
@@ -143,8 +128,27 @@ server <- function(input, output) {
       selected = 1)
   })
 
+
+  ## input table
+  values <- reactiveValues(data = defaultDF) ## assign it with NULL
+  # changes in numericInput sets all (!) new values
+  observe({
+    req(input$table)
+    DF <- hot_to_r(input$table)
+    DF[setdiff(rowNames,"TOTAL"),]
+    DF["TOTAL",] <- colSums(DF[setdiff(rowNames,"TOTAL"),], na.rm = TRUE)
+    values$data <- DF
+  })
+  
+  output$table <- renderRHandsontable({
+    req(values$data)
+    rhandsontable(values$data, rowHeaderWidth = 100) %>%
+      hot_row(nrow(values$data), readOnly = TRUE)
+  })
+
+
   #####-------------------------
-  ### Recreational F 
+  ### Reactive section
   
   reactiveData <- reactive({
     # Get advice value and total Z from advcie forecast
@@ -158,7 +162,6 @@ server <- function(input, output) {
     }
 
     ## Get multiplier
-    #TEMP# INPUT$RecF replaces input$RecF, which comes from the blocked code below (need the options from the dropdown menu)
     RecF <- RecFs[as.numeric(input$OpenSeason), as.numeric(input$BagLimit)+1]
     
     ## calculate recreational F based on management measures
@@ -193,6 +196,8 @@ server <- function(input, output) {
     
     catches <- CatchGear
     
+    # replace with "action" button later
+    out <- list()
     if (TRUE) {
       out <- 
         runForecast(
@@ -219,13 +224,14 @@ server <- function(input, output) {
         )
     }
 
-
+    # return things we need
     list(out = out, 
-         RecF = RecF, FbarRec = FbarRec, recCatch = recCatch,
-         Monthly = Monthly,
-         ICESadvComm = ICESadvComm, 
-         catches = catches)
+         FbarRec = FbarRec, recCatch = recCatch)
   })
+
+
+  #####-------------------------
+  ### prepare outputs
 
   # # Line that fetches the correct value for recreational F depending on the selections made
   output$RecF <- renderText({
@@ -243,6 +249,23 @@ server <- function(input, output) {
     reactiveData()$out$plot
   })
 
+
+  #####-------------------------
+  ### for debugging  
+  # Don't show in final
+  
+  output$debug_text <- renderText({ 
+    txt <- 
+      lapply(setdiff(names(input), "table"), 
+             function(x) c(paste0(x, ":"), capture.output(str(input[[x]])), ""))
+    
+    txt <- unlist(txt)
+    
+    txt <- c("Debug window:", "-------------\n", txt)
+    
+    paste(txt, collapse = "\n")
+  })
+
   output$debug_text_output <- renderText({
     obj <- reactiveData()
     txt <- 
@@ -256,23 +279,5 @@ server <- function(input, output) {
     paste(txt, collapse = "\n")
   })
 
-
-  ## input table
-  values <- reactiveValues(data = defaultDF) ## assign it with NULL
-  # changes in numericInput sets all (!) new values
-  observe({
-    req(input$table)
-    DF <- hot_to_r(input$table)
-    DF[setdiff(rowNames,"TOTAL"),]
-    DF["TOTAL",] <- colSums(DF[setdiff(rowNames,"TOTAL"),], na.rm = TRUE)
-    values$data <- DF
-  })
-  
-
-  output$table <- renderRHandsontable({
-    req(values$data)
-    rhandsontable(values$data, rowHeaderWidth = 100) %>%
-      hot_row(nrow(values$data), readOnly = TRUE)
-  })
 
 }
