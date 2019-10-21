@@ -33,17 +33,17 @@ sidebar_panel <-
     br(),
     h5(helpText("Select allowances for commercial gears.")),
 
-#    rHandsontableOutput('table')
+    rHandsontableOutput('table')
   )
 
 
 main_panel <-    
   mainPanel(
     width = 12 - side_width,
+    verbatimTextOutput("debug_text"),
     #tableOutput("values"),
     #plotOutput("catch_plot"),
-    #plotOutput("n_plot"),
-    verbatimTextOutput("debug_text"),
+    plotOutput("plot"),
     verbatimTextOutput("debug_text_output")
   )
  
