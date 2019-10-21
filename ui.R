@@ -1,6 +1,7 @@
 require(shiny)
 require(rhandsontable)
 require(markdown)
+require(shinythemes)
 
 side_width <- 5
 
@@ -41,6 +42,7 @@ sidebar_panel <-
 
 main_panel <-    
   mainPanel(
+    
     width = 12 - side_width,
     verbatimTextOutput("debug_text"),
     #tableOutput("values"),
@@ -55,7 +57,24 @@ main_panel <-
 ui <- 
   fluidPage(
     #titlePanel("Seabass Catch Options Tool by Age"),
+    #shinythemes::themeSelector(),
+    list(tags$head(HTML('<link rel="icon", href="ICES_logo_orange.png", 
+                                   type="image/png" />'))),
+    div(style="padding: 1px 0px; width: '100%'",
+        titlePanel(
+          title="", windowTitle="My Window Title"
+        )
+    ),
+
     navbarPage("Seabass catch allocation Tool",
+               theme=shinytheme("united"),
+               title=div(img(src="ICES_logo_orange.png"), "My Title in the Navbar"),
+                        
+             #img(src='ICES_logo_orange.png',
+                   #width="111", 
+                   #height="53",
+                   #align = "right"),
+               
       tabPanel("Instructions",
                  verbatimTextOutput("Instructions")), 
      tabPanel("Allocations",
