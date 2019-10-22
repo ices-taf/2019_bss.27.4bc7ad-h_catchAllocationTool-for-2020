@@ -7,7 +7,7 @@ side_width <- 5
 sidebar_panel <-
   sidebarPanel(
     width = side_width,
-    radioButtons("AdviceType", 
+    radioButtons("AdviceType",
                  label = h4("Choose Catch Advice"),
                  choices = list("EU MAP Fmsy" = "MSY", 
                                 "EU MAP Fmsy lower" = "MSYlow"), 

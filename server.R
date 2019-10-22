@@ -106,6 +106,7 @@ server <- function(input, output) {
                   "9 months"  = 5,
                   "10 months" = 6,
                   "12 months" = 7),
+      width = "40%",
       selected = 5)
   })
   # 
@@ -118,6 +119,7 @@ server <- function(input, output) {
                   "3 Fish"  = 3,
                   "4 Fish"  = 4,
                   "5+ Fish" = 5),
+      width = "40%",
       selected = 1)
   })
 
