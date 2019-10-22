@@ -106,6 +106,7 @@ server <- function(input, output) {
                   "9 months"  = 5,
                   "10 months" = 6,
                   "12 months" = 7),
+      width = "40%",
       selected = 5)
   })
   # 
@@ -118,6 +119,7 @@ server <- function(input, output) {
                   "3 Fish"  = 3,
                   "4 Fish"  = 4,
                   "5+ Fish" = 5),
+      width = "40%",
       selected = 1)
   })
 
@@ -273,6 +275,22 @@ server <- function(input, output) {
     reactiveForecast()$plot
   })
 
+  #output the value for the advice type choosen
+  output$ICESadv <- renderText({
+    paste0(
+      "The initial advice is=", 
+      reactiveData()$ICESadv)
+      
+    })
+  
+#Output for the total amont available after the recreational selection
+    output$ICESadvComm <- renderText({
+    paste0(
+      " Remaining available catch is =", 
+      round(reactiveData()$ICESadvComm,0))
+    
+  })
+  
 
   #####-------------------------
   ### for debugging  
