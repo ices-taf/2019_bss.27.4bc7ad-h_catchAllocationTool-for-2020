@@ -56,7 +56,7 @@ ui <-
                theme=shinytheme("united"),
                position ="fixed-top",
                
-               #img(src='ICES_logo_orange.png',
+               #img(src='ICES_logo_white.png',
                #width="111", 
                #height="53",
                #align = "right"),

@@ -77,17 +77,7 @@ ICESadvMSYlowRec <- 346
 #####-------------------------
 ### Create table structure
 months <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan21")
-rowNames<-c(month.name,"TOTAL")
-defaultDF <- data.frame(
-  row.names = rowNames,
-  Pelagic_Trawl=rep(NA_integer_, 13),
-  Demersal_Trawl=rep(NA_integer_, 13),
-  Hooks_and_Lines=rep(NA_integer_, 13),
-  Gill_Nets=rep(NA_integer_, 13), 
-  Other=rep(NA_integer_, 13),
-  stringsAsFactors = FALSE
-)
-
+rowNames <- list("12" = c(month.name), "1" = c("Year"))
 # set up with default values?
 defaultDF <- read.csv("data/CatchGear.csv", row.names = 1)
 
@@ -101,6 +91,10 @@ server <- function(input, output) {
   #####-------------------------
   ### Dynamic input sections
 
+
+  
+  
+  
   ########-------------------------------
   #Code to select the recreational options from section boxes
   
@@ -131,21 +125,38 @@ server <- function(input, output) {
   })
 
 
-  ## input table
-  values <- reactiveValues(data = defaultDF) ## assign it with NULL
+  ##Dynamic input table
+  #values <- reactiveValues(data = defaultDF) ## assign it with NULL
+  
+  valuesUser <- reactiveValues(data = NULL) ## assign it with NULL
+  
+  observeEvent(input$TimeStep, {
+    req(input$TimeStep)
+    valuesUser$data <- data.frame(
+      row.names = rowNames[[input$TimeStep]],
+      Pelagic_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
+      Demersal_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
+      Hooks_and_Lines=rep(NA_integer_, as.integer(input$TimeStep)),
+      Gill_Nets=rep(NA_integer_, as.integer(input$TimeStep)), 
+      Other=rep(NA_integer_, as.integer(input$TimeStep)),
+      stringsAsFactors = FALSE
+    )
+  })
+  
+  
   # changes in numericInput sets all (!) new values
   observe({
     req(input$table)
     DF <- hot_to_r(input$table)
-    DF[setdiff(rowNames,"TOTAL"),]
-    DF["TOTAL",] <- colSums(DF[setdiff(rowNames,"TOTAL"),], na.rm = TRUE)
-    values$data <- DF
+    DF[setdiff(rownames(DF),"TOTAL"),]
+    DF["TOTAL",] <- colSums(DF[setdiff(rownames(DF),"TOTAL"),], na.rm = TRUE)
+    valuesUser$data <- DF
   })
   
   output$table <- renderRHandsontable({
-    req(values$data)
-    rhandsontable(values$data, rowHeaderWidth = 100) %>%
-      hot_row(nrow(values$data), readOnly = TRUE)
+    req(valuesUser$data)
+    rhandsontable(valuesUser$data, rowHeaderWidth = 100) %>%
+      hot_row(nrow(valuesUser$data), readOnly = TRUE)
   })
 
 
