@@ -272,27 +272,28 @@ runForecast <-
   if (Ftotbar<0.2) Ftotbar <- round(Ftotbar,3) else Ftotbar <- round(Ftotbar,2)
   
   ## Commercial F and Fbar
-  annualF <- out[[1]]$catch_f  
-  if (Monthly) for (i in 2:(length(months)-1)) annualF <- annualF + out[[i]]$catch_f   
-  Fcomm <- apply(annualF,1,sum) # F landings + discards 
+  catchF <- out[[1]]$catch_f  
+  if (Monthly) for (i in 2:(length(months)-1)) catchF <- catchF + out[[i]]$catch_f   
+  Fcomm <- apply(catchF,1,sum) # F landings + discards 
   Fcommbar <- mean(Fcomm[5:16]) # ages 4-15
   # ICES rounding
   if (Fcommbar<0.2) Fcommbar <- round(Fcommbar,3) else Fcommbar <- round(Fcommbar,2)
   ## By gear
-  gearFTable <- apply(annualF[5:16,],2,mean)
+  gearFTable <- apply(catchF[5:16,],2,mean)
   for (gg in gears) if (gearFTable[gg]<0.2) gearFTable[gg] <- round(gearFTable[gg],3) else gearFTable[gg] <- round(gearFTable[gg],2)
   
   ## Landings
-  annualF <- out[[1]]$land_f  
-  if (Monthly) for (i in 2:(length(months)-1)) annualF <- annualF + out[[i]]$land_f   
-  Fland <- apply(annualF,1,sum) # F landings 
+  landF <- out[[1]]$land_f  
+  if (Monthly) for (i in 2:(length(months)-1)) landF <- landF + out[[i]]$land_f   
+  Fland <- apply(landF,1,sum) # F landings 
   Flandbar <- mean(Fland[5:16]) # ages 4-15
   # ICES rounding
   if (Flandbar<0.2) Flandbar <- round(Flandbar,3) else Flandbar <- round(Flandbar,2)
+  
   ## Discards
-  annualF <- out[[1]]$dis_f  
-  if (Monthly) for (i in 2:(length(months)-1)) annualF <- annualF + out[[i]]$dis_f   
-  Fdis <- apply(annualF,1,sum) # F discards 
+  discF <- out[[1]]$dis_f  
+  if (Monthly) for (i in 2:(length(months)-1)) discF <- discF + out[[i]]$dis_f   
+  Fdis <- apply(discF,1,sum) # F discards 
   Fdisbar <- mean(Fdis[5:16]) # ages 4-15
   # ICES rounding
   if (Fdisbar<0.2) Fdisbar <- round(Fdisbar,3) else Fdisbar <- round(Fdisbar,2)
@@ -308,7 +309,7 @@ runForecast <-
   realisedCatch[,1:length(gears)] <- adj*realisedCatch[,1:length(gears)]
   # round the values (have many decimals due to optimising Fmults)
   totalCatch <- sum(realisedCatch[13,],na.rm=T)
-  realisedCatch <- round(realisedCatch,0)
+  #realisedCatch <- round(realisedCatch,0)
   
   # Change ages for Jan 2021
   #initPop[,1] * exp(-(commF+(f_age_rec_2020[,2]*12)+Myr))
@@ -327,9 +328,20 @@ runForecast <-
   ### Show outputs
   
   ## Catch y gear table
-  CatchGearTable <- as.data.frame(realisedCatch)
-  dimnames(CatchGearTable)[[1]] <- c(months[1:12], "TOTAL")
+  CatchGearTable <- as.matrix(realisedCatch)
+  CatchGearTable <- rbind(CatchGearTable, c(gearFTable,NA))
+  CatchGearTable <- cbind(CatchGearTable, rep(NA, nrow(CatchGearTable)))
+  dimnames(CatchGearTable)[[1]] <- c(months[1:12], "TOTAL", "F")
+  dimnames(CatchGearTable)[[2]][ncol(CatchGearTable)] <- "TOTAL"
+  # F by gear
+  #gearFTable <- as.data.frame(gearFTable); dimnames(gearFTable)[[2]] <- "F"
+  CatchGearTable["F","Recreational"] <- FbarRec
   
+  # Add total column
+  CatchGearTable[,"TOTAL"] <- apply(CatchGearTable[,1:6],1,sum, na.rm=T)
+  # Round
+  CatchGearTable[-nrow(CatchGearTable),] <- round(CatchGearTable[-nrow(CatchGearTable),],0)
+ 
   ## Catch at age plot
   data <- as.data.frame(selectivity_age); data <- rbind(data[1:34,],data)
   levels(data$gear) <- c(levels(data$gear),"Recreational", "AdviceForecast")
@@ -338,9 +350,6 @@ runForecast <-
   if (ICESadvOpt=="MSY") expected <- AdviceForecastCatchAge[,"MSY"] else expected <- AdviceForecastCatchAge[,"MSYlow"]
   data[data$gear=="AdviceForecast",]$catch_n <- expected
   
-
-
-
   p <- 
     ggplot() + 
     geom_area(data = subset(data, gear!="AdviceForecast"), position = 'stack',   
@@ -370,9 +379,6 @@ runForecast <-
   forecastTable[, "SSB (2021)"] <- round(ssb2021,0)
   forecastTable[, "% SSB change"] <- round(100*(ssb2021-11413)/11413,1)
   if (ICESadvOpt=="MSY") forecastTable[, "% Advice change"] <- 7.8 else forecastTable[, "% Advice change"] <- -9.5
-  
-  ## F by gear
-  gearFTable <- as.data.frame(gearFTable); dimnames(gearFTable)[[2]] <- "F"
 
-  return(list(plot = p)) 
+  return(list(plot = p, catchTable = CatchGearTable, forecastTable = forecastTable)) 
 }
