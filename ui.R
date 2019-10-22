@@ -13,6 +13,10 @@ sidebar_panel <-
                                 "EU MAP Fmsy lower" = "MSYlow"), 
                  inline = TRUE, 
                  selected = "MSYlow"),
+    
+    h5(textOutput("ICESadv")),
+    
+hr(),
 
     radioButtons("TimeStep", 
                  label = h4("Choose Time Step"),
@@ -29,10 +33,14 @@ sidebar_panel <-
     # SelectBagLimit is coming from renderUI in server.r
     uiOutput("SelectBagLimit"), 
 
-    textOutput("RecF"),
+    h5(textOutput("RecF")),
 
-    br(),
-    h5(helpText("Select allowances for commercial gears.")),
+    
+    h5(textOutput("ICESadvComm")),
+
+    hr(),
+
+    h4(helpText("Select allowances for commercial gears.")),
 
     actionButton("go", "Go"),
     rHandsontableOutput('table')

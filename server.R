@@ -273,6 +273,22 @@ server <- function(input, output) {
     reactiveForecast()$plot
   })
 
+  #output the value for the advice type choosen
+  output$ICESadv <- renderText({
+    paste0(
+      "The initial advice is=", 
+      reactiveData()$ICESadv)
+      
+    })
+  
+#Output for the total amont available after the recreational selection
+    output$ICESadvComm <- renderText({
+    paste0(
+      "With the selected recreational measures the remaining available catch is =", 
+      round(reactiveData()$ICESadvComm),0)
+    
+  })
+  
 
   #####-------------------------
   ### for debugging  
