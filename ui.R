@@ -50,10 +50,11 @@ hr(),
 main_panel <-    
   mainPanel(
     width = 12 - side_width,
-    verbatimTextOutput("debug_text"),
-    #tableOutput("values"),
+    tableOutput("CatchGearTable"),
+    tableOutput("forecastTable"),
     #plotOutput("catch_plot"),
     plotOutput("plot"),
+    verbatimTextOutput("debug_text"),
     verbatimTextOutput("debug_text_output")
   )
  

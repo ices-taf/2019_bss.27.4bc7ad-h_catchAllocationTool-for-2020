@@ -52,55 +52,55 @@ objective_func <- function(log_fmults, catches, data, M, Frec, disSel, pop) {
 # }
 
 ##### Colin's original functions (altered for recreational by GL)
-
-calc_catches <- function(data, input, fmults) {
-  
-  data %>%
-    right_join(
-      data.frame(
-        gear = input$selected_gears, 
-        #        fmult = sapply(input$selected_gears, function(x) input[[gsub(" ", "_", x)]])
-        fmult = fmults
-      ), by = "gear") %>%
-    group_by(Age) %>%
-    mutate(
-      z = sum(fmult * Selectivity) + M + sum(f_age_rec_2020)
-    ) %>%
-    ungroup() %>%
-    mutate(
-      catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) # 
-      #  n * (1-exp(-z)) * f_age_rec_2020/ z # that was added by GL by mistake here -  
-      # still need to make sure recreational is not anymore in the gear list
-      # and that catch_n is also calculated for recreational but based on f_age_rec_2020 and no need for optimising
-    )
-}
-
-
-totals <- function(data, input, fmults) {
-  out <- 
-    calc_catches(data, input, fmults) %>%
-    group_by(gear) %>%
-        summarise(
-          catch = sum(catch_n * Weight)
-        )
-  out$catch
-}
-
-catches_to_fmult <- function(catches, data, input) {
-
-  objective_func <- function(log_fmults, catches, data, input) {
-    sum((totals(data, input, exp(log_fmults)) - catches)^2)
-  }
-
-  opt <- 
-    optim(rep(0, length(catches)), 
-          objective_func, 
-          catches = catches,
-          data = data,
-          input = input)
-  exp(opt$par)
-}
-
+# 
+# calc_catches <- function(data, input, fmults) {
+#   
+#   data %>%
+#     right_join(
+#       data.frame(
+#         gear = input$selected_gears, 
+#         #        fmult = sapply(input$selected_gears, function(x) input[[gsub(" ", "_", x)]])
+#         fmult = fmults
+#       ), by = "gear") %>%
+#     group_by(Age) %>%
+#     mutate(
+#       z = sum(fmult * Selectivity) + M + sum(f_age_rec_2020)
+#     ) %>%
+#     ungroup() %>%
+#     mutate(
+#       catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) # 
+#       #  n * (1-exp(-z)) * f_age_rec_2020/ z # that was added by GL by mistake here -  
+#       # still need to make sure recreational is not anymore in the gear list
+#       # and that catch_n is also calculated for recreational but based on f_age_rec_2020 and no need for optimising
+#     )
+# }
+# 
+# 
+# totals <- function(data, input, fmults) {
+#   out <- 
+#     calc_catches(data, input, fmults) %>%
+#     group_by(gear) %>%
+#         summarise(
+#           catch = sum(catch_n * Weight)
+#         )
+#   out$catch
+# }
+# 
+# catches_to_fmult <- function(catches, data, input) {
+# 
+#   objective_func <- function(log_fmults, catches, data, input) {
+#     sum((totals(data, input, exp(log_fmults)) - catches)^2)
+#   }
+# 
+#   opt <- 
+#     optim(rep(0, length(catches)), 
+#           objective_func, 
+#           catches = catches,
+#           data = data,
+#           input = input)
+#   exp(opt$par)
+# }
+# 
 
 runForecast <- 
   function(months, selectivity_age, weights_age, M, 
@@ -144,18 +144,18 @@ runForecast <-
         caught <- 0
         if (i>1) for (ii in 1:(i-1)) caught <- caught + sum(out[[ii]]$gearCatches)
         remaining <- ICESadvComm-caught
-        if (remaining < sum(catches[i,-1])) {
-          catches[i,-1] <- catches[i,-1] * (remaining/sum(catches[i,-1]))
-          for (ii in (i+1):(length(months)-1)) catches[ii,-1] <- 0
+        if (remaining < sum(catches[i,])) {
+          catches[i,] <- catches[i,] * (remaining/sum(catches[i,]))
+          for (ii in (i+1):(length(months)-1)) catches[ii,] <- 0
           switch <- F  
         }
       } # end of switch loop
       
       # Split catches in landings and discards
-      lanDis <- c(as.numeric(catches[i,-1])*(1-discard_prop[,2]),as.numeric(catches[i,-1])*discard_prop[,2])
+      lanDis <- c(as.numeric(catches[i,])*(1-discard_prop[,2]),as.numeric(catches[i,])*discard_prop[,2])
       
       # optimise Fmults to take the catches specified
-      opt <- optim(rep(0, 2*length(catches)), 
+      opt <- optim(rep(0, length(lanDis)), 
                    objective_func, 
                    catches = lanDis,
                    data = dat,
@@ -163,8 +163,8 @@ runForecast <-
                    Frec = f_age_rec_2020_month,
                    disSel = discard_Sel[,2],
                    pop=initPop[,months[i]],
-                   lower=rep(0, 2*length(catches)),
-                   #upper= rep(100, 2*length(catches)),
+                   lower=rep(0, length(lanDis)),
+                   #upper= rep(100, length(lanDis)),
                    method="L-BFGS-B")
       fmults <- opt$par
       
@@ -192,13 +192,13 @@ runForecast <-
     out <- list()
     
     # Cap catches at ICES advice
-    if (ICESadvComm < sum(catches[13,-1])) catches[13,-1] <- catches[13,-1] * (ICESadvComm/sum(catches[13,-1]))
+    if (ICESadvComm < sum(catches[1,])) catches[1,] <- catches[1,] * (ICESadvComm/sum(catches[1,]))
     
     # Split catches in landings and discards
-    lanDis <- c(as.numeric(catches[13,-1])*(1-discard_prop[,2]),as.numeric(catches[13,-1])*discard_prop[,2])
+    lanDis <- c(as.numeric(catches[1,])*(1-discard_prop[,2]),as.numeric(catches[1,])*discard_prop[,2])
     
     # optimise Fmults to take the catches specified
-    opt <- optim(rep(0, 2*length(catches)), 
+    opt <- optim(rep(0, length(lanDis)), 
                  objective_func, 
                  catches = lanDis,
                  data = dat,
@@ -206,8 +206,8 @@ runForecast <-
                  Frec = f_age_rec_2020,
                  disSel = discard_Sel[,2],
                  pop=initPop[,1],
-                 lower=rep(0, 2*length(catches)),
-                 #upper= rep(100, 2*length(catches)),
+                 lower=rep(0, length(lanDis)),
+                 #upper= rep(100, length(lanDis)),
                  method="L-BFGS-B")
     fmults <- opt$par
     
@@ -231,9 +231,8 @@ runForecast <-
   ### Sort results
   
   ## Commercial catches
-  asked <- CatchGear[,-1]
   #Commercial Landings  #sweep(realisedCatch, 2, 1-discard_prop[,2], `*`) 
-  realisedLandings <- asked; realisedLandings[] <- 0
+  realisedLandings <- CatchGear; realisedLandings[] <- 0
   if (Monthly) {
     for (i in 1:(length(months)-1)) realisedLandings[i,] <- out[[i]]$gearCatches[,1:length(gears)]
     realisedLandings[13,] <- apply(realisedLandings[-13,],2,sum) 
@@ -241,7 +240,7 @@ runForecast <-
   if (!Monthly) realisedLandings[13,] <- out[[1]]$gearCatches[,1:length(gears)]
   totCommLandings <- sum(realisedLandings[13,])
   #Commercial Discards    #sweep(realisedCatch, 2, discard_prop[,2], `*`) 
-  realisedDiscards <- asked; realisedDiscards[] <- 0
+  realisedDiscards <- CatchGear; realisedDiscards[] <- 0
   if (Monthly) {
     for (i in 1:(length(months)-1)) realisedDiscards[i,] <- out[[i]]$gearCatches[,(length(gears)+1):(2*length(gears))]
     realisedDiscards[13,] <- apply(realisedDiscards[-13,],2,sum) 
@@ -253,7 +252,13 @@ runForecast <-
   totCommCatch <- sum(realisedCatch[13,])
  
   # to make perfect with advice
-  adj <- (ICESadv-recCatch)/totCommCatch
+  if (Monthly) {
+    if (sum(catches[13,], na.rm=T)>(ICESadv-recCatch)) ft <- T else ft <- F
+  }
+  if (!Monthly) {
+    if (sum(catches[1,], na.rm=T)>(ICESadv-recCatch)) ft <- T else ft <- F
+  }
+  if (ft) adj <- (ICESadv-recCatch)/totCommCatch else adj <- 1
   totCommCatch <- adj*totCommCatch
   totCommLandings <- adj*totCommLandings 
   totCommDiscards <- adj*totCommDiscards 
@@ -341,7 +346,11 @@ runForecast <-
   CatchGearTable[,"TOTAL"] <- apply(CatchGearTable[,1:6],1,sum, na.rm=T)
   # Round
   CatchGearTable[-nrow(CatchGearTable),] <- round(CatchGearTable[-nrow(CatchGearTable),],0)
- 
+  # Add months
+  CatchGearTable <- cbind(rep(NA, nrow(CatchGearTable)), CatchGearTable)
+  dimnames(CatchGearTable)[[2]][1] <- "Month"
+  CatchGearTable[,"Month"] <- c(months[1:12], "TOTAL", "F")
+
   ## Catch at age plot
   data <- as.data.frame(selectivity_age); data <- rbind(data[1:34,],data)
   levels(data$gear) <- c(levels(data$gear),"Recreational", "AdviceForecast")
@@ -378,7 +387,10 @@ runForecast <-
   forecastTable[, "F Recreational removals"] <- FbarRec
   forecastTable[, "SSB (2021)"] <- round(ssb2021,0)
   forecastTable[, "% SSB change"] <- round(100*(ssb2021-11413)/11413,1)
-  if (ICESadvOpt=="MSY") forecastTable[, "% Advice change"] <- 7.8 else forecastTable[, "% Advice change"] <- -9.5
-
-  return(list(plot = p, catchTable = CatchGearTable, forecastTable = forecastTable)) 
+  if (ft) {
+    if (ICESadvOpt=="MSY") forecastTable[, "% Advice change"] <- 7.8 else forecastTable[, "% Advice change"] <- -9.5
+  }
+  if (!ft) forecastTable[, "% Advice change"] <- 100*((totCommCatch+recCatch)-1806)/1806
+  
+  return(list(plot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable)) 
 }

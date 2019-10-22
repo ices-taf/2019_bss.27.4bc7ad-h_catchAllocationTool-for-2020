@@ -205,7 +205,7 @@ server <- function(input, output) {
     #CatchGear <- read.csv("data/CatchGear.csv")
     CatchGear <- hot_to_r(input$table)
     # Calculate TOTAL
-    CatchGear[13,-1] <- apply(CatchGear[1:12,-1], 2, sum)
+    CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum)
     
     catches <- CatchGear
 
@@ -275,6 +275,14 @@ server <- function(input, output) {
     reactiveForecast()$plot
   })
 
+  output$CatchGearTable <- renderTable({
+    reactiveForecast()$CatchGearTable
+  })
+ 
+  output$forecastTable <- renderTable({
+    reactiveForecast()$forecastTable
+  })
+  
   #output the value for the advice type choosen
   output$ICESadv <- renderText({
     paste0(
