@@ -12,7 +12,7 @@ sidebar_panel <-
                  choices = list("EU MAP Fmsy" = "MSY", 
                                 "EU MAP Fmsy lower" = "MSYlow"), 
                  inline = TRUE, 
-                 selected = "MSYlow"),
+                 selected = "MSY"),
     
     h5(textOutput("ICESadv")),
     

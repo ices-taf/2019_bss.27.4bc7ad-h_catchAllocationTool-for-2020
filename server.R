@@ -284,8 +284,8 @@ server <- function(input, output) {
 #Output for the total amont available after the recreational selection
     output$ICESadvComm <- renderText({
     paste0(
-      "With the selected recreational measures the remaining available catch is =", 
-      round(reactiveData()$ICESadvComm),0)
+      " Remaining available catch is =", 
+      round(reactiveData()$ICESadvComm,0))
     
   })
   
