@@ -92,9 +92,6 @@ server <- function(input, output) {
   ### Dynamic input sections
 
 
-  
-  
-  
   ########-------------------------------
   #Code to select the recreational options from section boxes
   
@@ -204,7 +201,7 @@ server <- function(input, output) {
     # This data file is not needed for the shiny operation
     # Note: users specify total catch by gear (part of this will be discarded)
     #CatchGear <- read.csv("data/CatchGear.csv")
-    CatchGear <- cbind(X = rowNames, hot_to_r(input$table))
+    CatchGear <- hot_to_r(input$table)
     # Calculate TOTAL
     CatchGear[13,-1] <- apply(CatchGear[1:12,-1], 2, sum)
     
