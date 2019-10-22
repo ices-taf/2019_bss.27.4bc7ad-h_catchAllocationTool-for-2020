@@ -43,7 +43,10 @@ hr(),
     h4(helpText("Select allowances for commercial gears.")),
 
     actionButton("go", "Go"),
-    rHandsontableOutput('table')
+    rHandsontableOutput('table'),
+
+    h5(textOutput("RemQuota"))
+
   )
 
 

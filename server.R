@@ -158,7 +158,18 @@ server <- function(input, output) {
       hot_row(nrow(valuesUser$data), readOnly = TRUE)
   })
 
+  
+  # # Line that fetches the correct value for recreational F depending on the selections made
+  output$RemQuota <- renderText({
+    paste0(
+      "Quota remaing: ", 
+      round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0),
+      " t."
+    )
+  })
 
+  
+  
   #####-------------------------
   ### Reactive section
   
@@ -262,14 +273,14 @@ server <- function(input, output) {
   # # Line that fetches the correct value for recreational F depending on the selections made
   output$RecF <- renderText({
     paste0(
-      "The recreational catch for the options above is ", 
+      "For the options above, ",
       round(reactiveData()$recCatch, 0),
-      " t (F = ",
+      " t of fish (F = ",
       round(reactiveData()$FbarRec, 3),
-      ")"
+      ") will be removed by the recreational fishery (through catches or mortality after catch-and-release)."
     )
   })
- 
+  
 
   output$plot <- renderPlot({
     reactiveForecast()$plot
@@ -294,8 +305,9 @@ server <- function(input, output) {
 #Output for the total amont available after the recreational selection
     output$ICESadvComm <- renderText({
     paste0(
-      " Remaining available catch is =", 
-      round(reactiveData()$ICESadvComm,0))
+      " Remaining available catch is = ", 
+      round(reactiveData()$ICESadvComm,0),
+      "t.")
     
   })
   
