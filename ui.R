@@ -72,8 +72,8 @@ hr(),
     actionButton("go", "Go"),
     rHandsontableOutput('table'),
 
-    h5(textOutput("RemQuota"))
-
+    #h5(textOutput("RemQuota"))
+     htmlOutput("RemQuota")
   )
 
 
@@ -91,10 +91,8 @@ main_panel <-
 # user interface
 ui <- 
   fluidPage(
-
+    tags$style(type="text/css", "body {padding-top: 70px;}"),
     
-
-  
     navbarPage("Seabass catch allocation Tool",
                theme=shinytheme("united"),
                position ="fixed-top",
@@ -106,16 +104,14 @@ ui <-
                
                tabPanel("Instructions",
                         
-                        
                         includeMarkdown("teste markdown.Rmd")
-                        #uiOutput("markdown")
                         
-                        #verbatimTextOutput("Instructions"), 
                         ),
                         
                         
                         
                tabPanel("Allocations",
+                        
     #titlePanel("Seabass Catch Options Tool by Age"),
     sidebarLayout(
       sidebarPanel = sidebar_panel,

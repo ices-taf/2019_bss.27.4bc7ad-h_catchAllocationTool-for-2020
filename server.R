@@ -160,17 +160,23 @@ server <- function(input, output) {
   })
 
   
-  # # Line that fetches the correct value for recreational F depending on the selections made
-  output$RemQuota <- renderText({
-    paste0(
-      "Quota remaining: ", 
-      round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0),
-      " t."
-    )
-  })
+  # # Line that calculates the remaining of catches after the recreational options
 
+  output$RemQuota <- renderText({ 
+    
+    leftOver<-round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0)
+    
+    if(leftOver < 0){
+      
+      return(paste("Quota remaining: ", "<span style=\"color:red\">",leftOver,"t","</span>"))
+      
+    }else{
+      
+      return(paste("Quota remaining: ", "<span style=\"color:green\">",leftOver,"t","</span>"))
+    }
+      })
   
-  
+
   #####-------------------------
   ### Reactive section
   
@@ -313,10 +319,7 @@ server <- function(input, output) {
     
   })
   
-    #output for markdown instructions
-    #output$markdown <- renderUI({
-      #HTML(markdown::markdownToHTML(knit("teste markdown.Rmd", quiet = TRUE)))
-   # })
+ 
 
   #####-------------------------
   ### for debugging  
