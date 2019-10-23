@@ -33,9 +33,18 @@ gearCatches <- function(fmults, dat, pop, Frec, disSel, disProp, M, repress=T){
       landN[,gg] <- pop*(1-exp(-zmort)) * (fmort[,gg]/zmort)
     }
     disN <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
+    if (sum(projCatch[,1:5])!=0) {
+    activeDisProp <- disProp
+    activeDisProp[,2] <-   (disProp[,2]*projCatch[,1:5])/sum(projCatch[,1:5])
     for (gg in 1:length(gears)) {
-       disN[,gg] <- pop*(1-exp(-zmort)) * (((dismort*disProp[disProp[,"Gear"]==gears[gg],2])/sum(disProp[,2]))/zmort)
-     }
+       disN[,gg] <- pop*(1-exp(-zmort)) * (((dismort*activeDisProp[activeDisProp[,"Gear"]==gears[gg],2])/sum(activeDisProp[,2]))/zmort)
+      }
+    } else {
+    for (gg in 1:length(gears)) {
+        disN[,gg] <- pop*0
+      }
+    }
+    
     #disN <- matrix(0,nrow=17,ncol=1, dimnames=list(c(0:15,"16+"), "DiscardsTotal"))
     #disN <- pop*(1-exp(-zmort)) * (dismort/zmort)
     # catchN <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
@@ -50,8 +59,8 @@ gearCatches <- function(fmults, dat, pop, Frec, disSel, disProp, M, repress=T){
 }
 
 # Objective function for optimising fmults (sum of squares) 
-objective_func <- function(log_fmults, catches, data, M, Frec, disSel, disProp, pop) {
-  sum((gearCatches(fmults=log_fmults, dat=data, pop=pop, Frec=Frec, disSel=disSel, disProp=disProp, M=M, repress=T) - catches)^2)
+objective_func <- function(log_fmults, gearcatch, data, M, Frec, disSel, disProp, pop) {
+  sum((gearCatches(fmults=log_fmults, dat=data, pop=pop, Frec=Frec, disSel=disSel, disProp=disProp, M=M, repress=T) - gearcatch)^2)
 }
 # added penalty to prevent negative Fmults
 # objective_func <- function(log_fmults, catches, data, M, Frec, disSel, pop) {
@@ -114,7 +123,7 @@ runForecast <-
       # optimise Fmults to take the catches specified
       opt <- optim(rep(0, length(lanDis)), 
                    objective_func, 
-                   catches = lanDis,
+                   gearcatch = lanDis,
                    data = dat,
                    M=M,
                    Frec = f_age_rec_2020_month,
@@ -158,7 +167,7 @@ runForecast <-
     # optimise Fmults to take the catches specified
     opt <- optim(rep(0, length(lanDis)), 
                  objective_func, 
-                 catches = lanDis,
+                 gearcatch = lanDis,
                  data = dat,
                  M = Myr,
                  Frec = f_age_rec_2020,
@@ -191,7 +200,7 @@ runForecast <-
   
   ## Commercial catches
   #Commercial Landings  #sweep(realisedCatch, 2, 1-discard_prop[,2], `*`) 
-  realisedLandings <- CatchGear; realisedLandings[] <- 0
+  realisedLandings <- catches; realisedLandings[] <- 0
   if (Monthly) {
     for (i in 1:(length(months)-1)) realisedLandings[i,] <- out[[i]]$gearCatches[,1:length(gears)]
     realisedLandings[13,] <- apply(realisedLandings[-13,],2,sum) 
@@ -199,12 +208,28 @@ runForecast <-
   if (!Monthly) realisedLandings[13,] <- out[[1]]$gearCatches[,1:length(gears)]
   totCommLandings <- sum(realisedLandings[13,])
   #Commercial Discards    #sweep(realisedCatch, 2, discard_prop[,2], `*`) 
-  realisedDiscards <- CatchGear; realisedDiscards[] <- 0
+  realisedDiscards <- catches; realisedDiscards[] <- 0
   if (Monthly) {
-    for (i in 1:(length(months)-1)) realisedDiscards[i,] <- (out[[i]]$gearCatches[,(length(gears)+1)]* discard_prop[,2])/sum(discard_prop[,2])
+    for (i in 1:(length(months)-1)) {
+      if (sum(realisedLandings[i,])!=0) {
+        activeDisProp <- discard_prop
+        activeDisProp[,2] <- as.numeric(discard_prop[,2]*realisedLandings[i,])/sum(realisedLandings[i,])
+        realisedDiscards[i,] <- (out[[i]]$gearCatches[,(length(gears)+1)]* activeDisProp[,2])/sum(activeDisProp[,2])
+      } else {
+        realisedDiscards[i,] <- rep(0,length(gears))
+      }
+    }
     realisedDiscards[13,] <- apply(realisedDiscards[-13,],2,sum) 
   }
-  if (!Monthly) realisedDiscards[13,] <- (out[[1]]$gearCatches[,(length(gears)+1)] * discard_prop[,2])/sum(discard_prop[,2])
+  if (!Monthly) {
+    if (sum(realisedLandings[13,])!=0) {
+    activeDisProp <- discard_prop
+    activeDisProp[,2] <-   as.numeric(discard_prop[,2]*realisedLandings[13,])/sum(realisedLandings[13,])
+    realisedDiscards[13,] <- (out[[1]]$gearCatches[,(length(gears)+1)] * activeDisProp[,2])/sum(activeDisProp[,2])
+    } else {
+      realisedDiscards[13,] <- rep(0,length(gears)) 
+    }
+  }
   totCommDiscards <- sum(realisedDiscards[13,])
   #Commercial Catch
   realisedCatch <- realisedLandings + realisedDiscards
