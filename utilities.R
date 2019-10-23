@@ -3,6 +3,7 @@
 gearCatches <- function(fmults, dat, pop, Frec, disSel, M, repress=T){
   gears <- unique(dat$gear)
   #M <- dat$M[1]
+  #fmults <- exp(fmults)
     
   fmort <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
   dismort <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
@@ -50,57 +51,6 @@ objective_func <- function(log_fmults, catches, data, M, Frec, disSel, pop) {
 #   otpt <- gearCatches(fmults=log_fmults, dat=data, pop=pop, Frec=Frec, disSel=disSel, M=M, repress=T)
 #   if (sum(otpt<0)>0) 9e99 else sum((otpt - catches)^2)
 # }
-
-##### Colin's original functions (altered for recreational by GL)
-# 
-# calc_catches <- function(data, input, fmults) {
-#   
-#   data %>%
-#     right_join(
-#       data.frame(
-#         gear = input$selected_gears, 
-#         #        fmult = sapply(input$selected_gears, function(x) input[[gsub(" ", "_", x)]])
-#         fmult = fmults
-#       ), by = "gear") %>%
-#     group_by(Age) %>%
-#     mutate(
-#       z = sum(fmult * Selectivity) + M + sum(f_age_rec_2020)
-#     ) %>%
-#     ungroup() %>%
-#     mutate(
-#       catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) # 
-#       #  n * (1-exp(-z)) * f_age_rec_2020/ z # that was added by GL by mistake here -  
-#       # still need to make sure recreational is not anymore in the gear list
-#       # and that catch_n is also calculated for recreational but based on f_age_rec_2020 and no need for optimising
-#     )
-# }
-# 
-# 
-# totals <- function(data, input, fmults) {
-#   out <- 
-#     calc_catches(data, input, fmults) %>%
-#     group_by(gear) %>%
-#         summarise(
-#           catch = sum(catch_n * Weight)
-#         )
-#   out$catch
-# }
-# 
-# catches_to_fmult <- function(catches, data, input) {
-# 
-#   objective_func <- function(log_fmults, catches, data, input) {
-#     sum((totals(data, input, exp(log_fmults)) - catches)^2)
-#   }
-# 
-#   opt <- 
-#     optim(rep(0, length(catches)), 
-#           objective_func, 
-#           catches = catches,
-#           data = data,
-#           input = input)
-#   exp(opt$par)
-# }
-# 
 
 runForecast <- 
   function(months, selectivity_age, weights_age, M, 
@@ -162,10 +112,10 @@ runForecast <-
                    M=M,
                    Frec = f_age_rec_2020_month,
                    disSel = discard_Sel[,2],
-                   pop=initPop[,months[i]],
-                   lower=rep(0, length(lanDis)),
+                   pop=initPop[,months[i]])#,
+                   #lower=rep(0, length(lanDis)),
                    #upper= rep(100, length(lanDis)),
-                   method="L-BFGS-B")
+                   #method="L-BFGS-B")
       fmults <- opt$par
       
       # Use optimised fmults to get catch.n, commercial F and total Z 
@@ -352,21 +302,35 @@ runForecast <-
   CatchGearTable[,"Month"] <- c(months[1:12], "TOTAL", "F")
 
   ## Catch at age plot
-  data <- as.data.frame(selectivity_age); data <- rbind(data[1:34,],data)
-  levels(data$gear) <- c(levels(data$gear),"Recreational", "AdviceForecast")
-  dimnames(data)[[2]][2] <- "catch_n"; data[1:17,"gear"] <- "AdviceForecast"; data[18:34,"gear"] <- "Recreational"
-  for (gg in c(as.character(gears),"Recreational")) data[data$gear==gg,]$catch_n <- catch_n[,gg]
+  dataPlot <- as.data.frame(selectivity_age); dataPlot <- rbind(dataPlot[1:34,],dataPlot)
+  levels(dataPlot$gear) <- c(levels(dataPlot$gear),"Recreational", "AdviceForecast")
+  dimnames(dataPlot)[[2]][2] <- "catch_n"; dataPlot[1:17,"gear"] <- "AdviceForecast"; dataPlot[18:34,"gear"] <- "Recreational"
+  for (gg in c(as.character(gears),"Recreational")) dataPlot[dataPlot$gear==gg,]$catch_n <- catch_n[,gg]
   if (ICESadvOpt=="MSY") expected <- AdviceForecastCatchAge[,"MSY"] else expected <- AdviceForecastCatchAge[,"MSYlow"]
-  data[data$gear=="AdviceForecast",]$catch_n <- expected
-  
-  p <- 
-    ggplot() + 
-    geom_area(data = subset(data, gear!="AdviceForecast"), position = 'stack',   
+  dataPlot[dataPlot$gear=="AdviceForecast",]$catch_n <- expected
+
+  p <-
+    ggplot() +
+    geom_area(data = subset(dataPlot, gear!="AdviceForecast"), position = 'stack',
               aes(x = Age, y = catch_n, fill = gear)) +
-    geom_line(data = subset(data, gear=="AdviceForecast"), linetype=2,   
+    geom_line(data = subset(dataPlot, gear=="AdviceForecast"), linetype=2,
               aes(x = Age, y = catch_n))  +
     ylab("Catch at Age (thousands)")
   
+  # dataPlot <- as.data.frame(selectivity_age); dataPlot <- rbind(dataPlot[1:17,],dataPlot)
+  # levels(dataPlot$gear) <- c(levels(dataPlot$gear),"Recreational")
+  # dimnames(dataPlot)[[2]][2] <- "catch_n"; dataPlot[1:17,"gear"] <- "Recreational"
+  # for (gg in c(as.character(gears),"Recreational")) dataPlot[dataPlot$gear==gg,]$catch_n <- catch_n[,gg]
+  #   if (ICESadvOpt=="MSY") expected <- AdviceForecastCatchAge[,"MSY"] else expected <- AdviceForecastCatchAge[,"MSYlow"]
+  # dataFore <- dataPlot[1:17,]; dataFore[,"gear"] <- "AdviceForecast"
+  # dataFore$catch_n <- expected
+  # p <- 
+  #   ggplot() + 
+  #   geom_area(data = dataX, position = 'stack',   
+  #             aes(x = Age, y = catch_n, fill = gear)) +
+  #   geom_line(data = dataFore, linetype=2,   
+  #             aes(x = Age, y = catch_n))  +
+  #   ylab("Catch at Age (thousands)")
   
   # ggplot(data = subset(data, gear!="AdviceForecast"),
   #             aes(x = Age, y = catch_n, fill = gear)) +
@@ -392,5 +356,58 @@ runForecast <-
   }
   if (!ft) forecastTable[, "% Advice change"] <- 100*((totCommCatch+recCatch)-1806)/1806
   
-  return(list(plot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable)) 
+  return(list(catchNplot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable)) 
 }
+
+
+
+##### Colin's original functions (altered for recreational by GL)
+# 
+# calc_catches <- function(data, input, fmults) {
+#   
+#   data %>%
+#     right_join(
+#       data.frame(
+#         gear = input$selected_gears, 
+#         #        fmult = sapply(input$selected_gears, function(x) input[[gsub(" ", "_", x)]])
+#         fmult = fmults
+#       ), by = "gear") %>%
+#     group_by(Age) %>%
+#     mutate(
+#       z = sum(fmult * Selectivity) + M + sum(f_age_rec_2020)
+#     ) %>%
+#     ungroup() %>%
+#     mutate(
+#       catch_n = (n * (1-exp(-z)) * fmult * Selectivity / z) # 
+#       #  n * (1-exp(-z)) * f_age_rec_2020/ z # that was added by GL by mistake here -  
+#       # still need to make sure recreational is not anymore in the gear list
+#       # and that catch_n is also calculated for recreational but based on f_age_rec_2020 and no need for optimising
+#     )
+# }
+# 
+# 
+# totals <- function(data, input, fmults) {
+#   out <- 
+#     calc_catches(data, input, fmults) %>%
+#     group_by(gear) %>%
+#         summarise(
+#           catch = sum(catch_n * Weight)
+#         )
+#   out$catch
+# }
+# 
+# catches_to_fmult <- function(catches, data, input) {
+# 
+#   objective_func <- function(log_fmults, catches, data, input) {
+#     sum((totals(data, input, exp(log_fmults)) - catches)^2)
+#   }
+# 
+#   opt <- 
+#     optim(rep(0, length(catches)), 
+#           objective_func, 
+#           catches = catches,
+#           data = data,
+#           input = input)
+#   exp(opt$par)
+# }
+# 

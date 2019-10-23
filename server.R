@@ -133,11 +133,11 @@ server <- function(input, output) {
     req(input$TimeStep)
     valuesUser$data <- data.frame(
       row.names = rowNames[[input$TimeStep]],
-      Pelagic_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
       Demersal_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
-      Hooks_and_Lines=rep(NA_integer_, as.integer(input$TimeStep)),
       Gill_Nets=rep(NA_integer_, as.integer(input$TimeStep)), 
+      Hooks_and_Lines=rep(NA_integer_, as.integer(input$TimeStep)),
       Other=rep(NA_integer_, as.integer(input$TimeStep)),
+      Pelagic_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
       stringsAsFactors = FALSE
     )
   })
@@ -216,9 +216,10 @@ server <- function(input, output) {
     #CatchGear <- read.csv("data/CatchGear.csv")
     CatchGear <- hot_to_r(input$table)
     # Calculate TOTAL
-    CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum)
+    CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum, na.rm=T)
     
     catches <- CatchGear
+    catches[is.na(catches)] <- 0
 
     # return things we need
     list(CatchGear = CatchGear,
@@ -283,7 +284,7 @@ server <- function(input, output) {
   
 
   output$plot <- renderPlot({
-    reactiveForecast()$plot
+    reactiveForecast()$catchNplot
   })
 
   output$CatchGearTable <- renderTable({
