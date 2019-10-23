@@ -35,7 +35,7 @@ gearCatches <- function(fmults, dat, pop, Frec, disSel, disProp, M, repress=T){
     disN <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
     if (sum(projCatch[,1:5])!=0) {
     activeDisProp <- disProp
-    activeDisProp[,2] <-   (disProp[,2]*projCatch[,1:5])/sum(projCatch[,1:5])
+    activeDisProp[,2] <-   (disProp[,2]*projCatch[,1:length(gears)])/sum(projCatch[,1:length(gears)])
     for (gg in 1:length(gears)) {
        disN[,gg] <- pop*(1-exp(-zmort)) * (((dismort*activeDisProp[activeDisProp[,"Gear"]==gears[gg],2])/sum(activeDisProp[,2]))/zmort)
       }
@@ -251,7 +251,7 @@ runForecast <-
   catch_n <- out[[1]]$catch_n
   if (Monthly) for (i in 2:(length(months)-1)) catch_n <- catch_n + out[[i]]$catch_n 
   catch_n <- cbind(catch_n, catchRec_n)
-  dimnames(catch_n)[[2]][6] <- "Recreational"
+  dimnames(catch_n)[[2]][length(gears)+1] <- "Recreational"
   
   ### F values
   ## Total
@@ -293,9 +293,9 @@ runForecast <-
   if (FbarRec<0.2) FbarRec <- round(FbarRec,3) else FbarRec <- round(FbarRec,2)
   
   # Catch including recreational
-  realisedCatch <- cbind(realisedCatch, realisedCatch[,1]); realisedCatch[,6] <- NA
-  dimnames(realisedCatch)[[2]][6] <- "Recreational"; 
-  realisedCatch[13,6] <- recCatch  
+  realisedCatch <- cbind(realisedCatch, realisedCatch[,1]); realisedCatch[,length(gears)+1] <- NA
+  dimnames(realisedCatch)[[2]][length(gears)+1] <- "Recreational"; 
+  realisedCatch[13,length(gears)+1] <- recCatch  
   realisedCatch[,1:length(gears)] <- adj*realisedCatch[,1:length(gears)]
   # round the values (have many decimals due to optimising Fmults)
   totalCatch <- sum(realisedCatch[13,],na.rm=T)
@@ -328,7 +328,7 @@ runForecast <-
   CatchGearTable["F","Recreational"] <- FbarRec
   
   # Add total column
-  CatchGearTable[,"TOTAL"] <- apply(CatchGearTable[,1:6],1,sum, na.rm=T)
+  CatchGearTable[,"TOTAL"] <- apply(CatchGearTable[,1:(length(gears)+1)],1,sum, na.rm=T)
   # Round
   CatchGearTable[-nrow(CatchGearTable),] <- round(CatchGearTable[-nrow(CatchGearTable),],0)
   # Add months

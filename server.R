@@ -79,7 +79,7 @@ ICESadvMSYlowRec <- 346
 months <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan21")
 rowNames <- list("12" = c(month.name), "1" = c("Year"))
 # set up with default values?
-defaultDF <- read.csv("data/CatchGear.csv", row.names = 1)
+#defaultDF <- read.csv("data/CatchGear.csv", row.names = 1)
 
 #####-------------------------00000000000000000000000000000000-------------------------#####
 ### SERVER function
@@ -136,8 +136,7 @@ server <- function(input, output) {
       Demersal_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
       Gill_Nets=rep(NA_integer_, as.integer(input$TimeStep)), 
       Hooks_and_Lines=rep(NA_integer_, as.integer(input$TimeStep)),
-      Other=rep(NA_integer_, as.integer(input$TimeStep)),
-      Pelagic_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
+      Seines=rep(NA_integer_, as.integer(input$TimeStep)),
       stringsAsFactors = FALSE
     )
   })
