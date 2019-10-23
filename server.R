@@ -162,7 +162,7 @@ server <- function(input, output) {
   # # Line that fetches the correct value for recreational F depending on the selections made
   output$RemQuota <- renderText({
     paste0(
-      "Quota remaing: ", 
+      "Quota remaining: ", 
       round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0),
       " t."
     )
