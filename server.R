@@ -10,6 +10,8 @@ require(dplyr)
 require(ggplot2)
 require(shiny)
 require(rhandsontable)
+require(markdown)
+require(knitr)
 
 #####-------------------------
 ### Additional functions
@@ -153,7 +155,7 @@ server <- function(input, output) {
   
   output$table <- renderRHandsontable({
     req(valuesUser$data)
-    rhandsontable(valuesUser$data, rowHeaderWidth = 100) %>%
+    rhandsontable(valuesUser$data, rowHeaderWidth = 90, colWidths = 119) %>%
       hot_row(nrow(valuesUser$data), readOnly = TRUE)
   })
 
@@ -311,6 +313,10 @@ server <- function(input, output) {
     
   })
   
+    #output for markdown instructions
+    #output$markdown <- renderUI({
+      #HTML(markdown::markdownToHTML(knit("teste markdown.Rmd", quiet = TRUE)))
+   # })
 
   #####-------------------------
   ### for debugging  
