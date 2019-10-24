@@ -11,7 +11,8 @@ require(ggplot2)
 require(shiny)
 require(rhandsontable)
 require(markdown)
-require(knitr)
+require(shinythemes)
+
 
 #####-------------------------
 ### Additional functions

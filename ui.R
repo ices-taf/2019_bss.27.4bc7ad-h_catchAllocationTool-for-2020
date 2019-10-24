@@ -1,6 +1,9 @@
 require(shiny)
 require(rhandsontable)
 require(shinythemes)
+require(markdown)
+require(dplyr)
+require(ggplot2)
 
 side_width <- 5
 
