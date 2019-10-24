@@ -1,3 +1,3 @@
 Basis,Total_catch_(2020),Commercial_landings_(2020),Commercial_discards_(2020),Recreational_removals_(2020),Total_F_(2020),F_Commercial_landings_(2020),F_Commercial_discards_(2020),F_Recreational_removals,SSB_(2021),%_SSB_change,%_Advice_change
-"""EU MAP#: FMSY × SSB2020 / MSY Btrigger""",1946,1445,89,412,0.135,0.102,0.0038,0.029,10861,-4.8,7.8
-"""F = MAP FMSY lower × SSB2020 / MSY Btrigger""",1634,1213,74,346,0.112,0.085,0.0031,0.024,11114,-2.6,-9.5
+EU_MAP_FMSY,1946,1445,89,412,0.135,0.102,0.0038,0.029,10861,-4.8,7.8
+EU_MAP_FMSY_lower,1634,1213,74,346,0.112,0.085,0.0031,0.024,11114,-2.6,-9.5

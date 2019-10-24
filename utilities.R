@@ -33,7 +33,7 @@ gearCatches <- function(fmults, dat, pop, Frec, disSel, disProp, M, repress=T){
       landN[,gg] <- pop*(1-exp(-zmort)) * (fmort[,gg]/zmort)
     }
     disN <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
-    if (sum(projCatch[,1:5])!=0) {
+    if (sum(projCatch[,1:length(gears)])!=0) {
     activeDisProp <- disProp
     activeDisProp[,2] <-   (disProp[,2]*projCatch[,1:length(gears)])/sum(projCatch[,1:length(gears)])
     for (gg in 1:length(gears)) {
@@ -136,7 +136,7 @@ runForecast <-
       fmults <- opt$par
       
       # Use optimised fmults to get catch.n, commercial F and total Z 
-      tmp <- gearCatches(fmults,dat, initPop[,i], f_age_rec_2020_month, disSel = discard_Sel[,2], disProp = discard_prop, M, repress=F)
+      tmp <- gearCatches(fmults,dat, initPop[,i], f_age_rec_2020_month, disSel = discard_Sel[,2], disProp = discard_prop, M=M, repress=F)
       # # Get recreational catch at age and total catch
       # tmp$catchRec_n <- initPop[,i]*(1-exp(-tmp$total_z)) * (f_age_rec_2020[,2]/tmp$total_z)
       # tmp$recCatches <- sum(tmp$catchRec_n*weights_age_rec[,2])
@@ -373,9 +373,10 @@ runForecast <-
   #             geom_area(position = 'stack')
   
   ## Forecast table outputs
-  forecastTable <- matrix(NA, ncol=11,nrow=1,dimnames=list(ICESadvOpt,
-                                                           c("Total Catch", "Commercial Landings", "Commercial discards", "Recreational removals", "Total F", "F Commercial landings",
+  forecastTable <- matrix(NA, ncol=12,nrow=1,dimnames=list(ICESadvOpt,
+                                                           c("Basis", "Total Catch", "Commercial Landings", "Commercial discards", "Recreational removals", "Total F", "F Commercial landings",
                                                              "F Commercial discards", "F Recreational removals", "SSB (2021)", "% SSB change", "% Advice change")))
+  forecastTable[,"Basis"] <- "Simulated Scenario"
   forecastTable[,"Total Catch"] <- round(totCommCatch+recCatch,0)
   forecastTable[,"Commercial Landings"] <- round(totCommLandings,0)
   forecastTable[,"Commercial discards"] <- round(totCommDiscards,0)
@@ -389,7 +390,12 @@ runForecast <-
   if (ft) {
     if (ICESadvOpt=="MSY") forecastTable[, "% Advice change"] <- 7.8 else forecastTable[, "% Advice change"] <- -9.5
   }
-  if (!ft) forecastTable[, "% Advice change"] <- 100*((totCommCatch+recCatch)-1806)/1806
+  if (!ft) forecastTable[, "% Advice change"] <- round(100*((totCommCatch+recCatch)-1806)/1806,1)
+  
+  # 2019 Advice sheet catch scenarios
+  AdviceScenarios <- read.csv("data/bss.27.4bc7ad-h 2019 Advice scenarios.csv")
+  forecastTable <- rbind(forecastTable, forecastTable, forecastTable)
+  for (i in 2:3) for (j in 1:ncol(forecastTable)) forecastTable[i,j] <- as.character(AdviceScenarios[i-1,j])
   
   return(list(catchNplot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable)) 
 }

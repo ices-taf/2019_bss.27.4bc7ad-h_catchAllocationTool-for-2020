@@ -341,7 +341,18 @@ server <- function(input, output) {
   })
   
  
-
+    output$FigureCap <- renderText({ 
+        txt <- "Catch at Age, by gear. The dashed line (---) indicates the predicted catch at age in the ICES forecast."
+      })
+    
+    output$AllocTabCap <- renderText({ 
+      txt <- "Catch Allocations. Catches are limited to the chosen advice level."
+    })
+    
+    output$ScenTabCap <- renderText({ 
+      txt <- "Forecast scenarios."
+    })
+    
   #####-------------------------
   ### for debugging  
   # Don't show in final
