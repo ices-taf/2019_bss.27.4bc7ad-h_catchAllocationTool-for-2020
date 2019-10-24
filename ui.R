@@ -81,8 +81,11 @@ hr(),
 main_panel <-    
   mainPanel(
     width = 12 - side_width,
-     plotOutput("plot"),
+    verbatimTextOutput("FigureCap"),
+    plotOutput("plot"),
+    verbatimTextOutput("AllocTabCap"),
     tableOutput("CatchGearTable"),
+    verbatimTextOutput("ScenTabCap"),
     tableOutput("forecastTable")
     #plotOutput("catch_plot"),
     #verbatimTextOutput("debug_text"),
