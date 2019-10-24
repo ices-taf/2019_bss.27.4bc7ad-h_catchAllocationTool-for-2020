@@ -106,7 +106,7 @@ ui <-
                
                tabPanel("Instructions",
                         
-                        includeMarkdown("teste markdown.Rmd")
+                        includeMarkdown("Instructions.Rmd")
                         
                         ),
                         
@@ -123,7 +123,8 @@ ui <-
     ),
     #title = "Seabass Catch Options Tool" # title in the tab
     tabPanel(
-      "summary",
+      "Useful links",
+      includeMarkdown("UsefulLinks.Rmd"),
       verbatimTextOutput("summary")) 
     
                )
