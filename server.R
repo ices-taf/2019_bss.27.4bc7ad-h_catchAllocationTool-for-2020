@@ -100,7 +100,7 @@ server <- function(input, output) {
   output$SelectOpenSeason <- renderUI({
     selectInput(
       "OpenSeason", 
-      "Select duration of open season", 
+      label= div(style = "font-size:13px","Duration of open season"), 
       choices = c("0 months"  = 1,
                   "3 months"  = 2,
                   "6 months"  = 3,
@@ -115,7 +115,7 @@ server <- function(input, output) {
   output$SelectBagLimit <- renderUI({
     selectInput(
       "BagLimit", 
-      "Select Bag Limit size", 
+      label= div(style = "font-size:13px","Bag limit size"), 
       choices = c("1 Fish"  = 1,
                   "2 Fish"  = 2,
                   "3 Fish"  = 3,
@@ -294,10 +294,31 @@ server <- function(input, output) {
     reactiveForecast()$catchNplot
   })
 
+
+  #Output to get a dynamic output table using the time step 
   output$CatchGearTable <- renderTable({
-    reactiveForecast()$CatchGearTable
-  })
- 
+    
+  req(input$TimeStep)
+    
+  if (input$TimeStep==12 ){
+  return(
+  reactiveForecast()$CatchGearTable)
+   
+  }else{
+    
+    reactiveForecast()$CatchGearTable[c(13,14),]
+   
+  }
+   })
+  
+  
+  
+  
+  
+  
+  
+  
+  
   output$forecastTable <- renderTable({
     reactiveForecast()$forecastTable
   })
@@ -305,7 +326,7 @@ server <- function(input, output) {
   #output the value for the advice type choosen
   output$ICESadv <- renderText({
     paste0(
-      "The initial advice is=", 
+      "The initial advice is= ", 
       reactiveData()$ICESadv)
       
     })
@@ -325,30 +346,30 @@ server <- function(input, output) {
   ### for debugging  
   # Don't show in final
   
-  output$debug_text <- renderText({ 
-    txt <- 
-      lapply(setdiff(names(input), "table"), 
-             function(x) c(paste0(x, ":"), capture.output(str(input[[x]])), ""))
-    
-    txt <- unlist(txt)
-    
-    txt <- c("Debug window:", "-------------\n", txt)
-    
-    paste(txt, collapse = "\n")
-  })
-
-  output$debug_text_output <- renderText({
-    obj <- reactiveData()
-    txt <- 
-      lapply(names(obj), 
-             function(x) c(paste0(x, ":"), capture.output(str(obj[[x]])), ""))
-    
-    txt <- unlist(txt)
-    
-    txt <- c("Debug window:", "-------------\n", txt)
-    
-    paste(txt, collapse = "\n")
-  })
+  # output$debug_text <- renderText({ 
+  #   txt <- 
+  #     lapply(setdiff(names(input), "table"), 
+  #            function(x) c(paste0(x, ":"), capture.output(str(input[[x]])), ""))
+  #   
+  #   txt <- unlist(txt)
+  #   
+  #   txt <- c("Debug window:", "-------------\n", txt)
+  #   
+  #   paste(txt, collapse = "\n")
+  # })
+  # 
+  # output$debug_text_output <- renderText({
+  #   obj <- reactiveData()
+  #   txt <- 
+  #     lapply(names(obj), 
+  #            function(x) c(paste0(x, ":"), capture.output(str(obj[[x]])), ""))
+  #   
+  #   txt <- unlist(txt)
+  #   
+  #   txt <- c("Debug window:", "-------------\n", txt)
+  #   
+  #   paste(txt, collapse = "\n")
+  # })
 
 
 }
