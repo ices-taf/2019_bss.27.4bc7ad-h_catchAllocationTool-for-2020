@@ -8,7 +8,7 @@ sidebar_panel <-
   sidebarPanel(
     width = side_width,
     radioButtons("AdviceType",
-                 label = h4("Choose Catch Advice"),
+                 label = h4("Select catch advice"),
                  choices = list("EU MAP Fmsy" = "MSY", 
                                 "EU MAP Fmsy lower" = "MSYlow"), 
                  inline = TRUE, 
@@ -19,43 +19,44 @@ sidebar_panel <-
 hr(),
 
     radioButtons("TimeStep", 
-                 label = h4("Choose Time Step"),
+                 label = h4("Select time step"),
                  choices = list("Annual" = 1, "Monthly" = 12), 
                  inline = TRUE, 
                  selected = 1),
     
-    br(),
-    h5(helpText("Recreational management measures.")),
+    hr(),
+
+    h4(helpText(" Select recreational management measures.")),
 
     # SelectOpenSeason is coming from renderUI in server.r
     uiOutput("SelectOpenSeason"), 
 
-#tags$div(selectInput("SelectOpenSeason",
-                     #"Select duration of open season   ", 
-                    # choices = c("0 months"  = 1,
-                    #             "3 months"  = 2,
-                    #             "6 months"  = 3,
-                     #            "7 months"  = 4,
-                     #            "9 months"  = 5,
-                     #            "10 months" = 6,
-                     #            "12 months" = 7),
-                     #width = "120%",
-                    # selected = 5),  style="display:inline-block"),
+# tags$div(selectInput("SelectOpenSeason",
+#                      "Select duration of open season   ", 
+#                      choices = c("0 months"  = 1,
+#                                  "3 months"  = 2,
+#                                  "6 months"  = 3,
+#                                 "7 months"  = 4,
+#                                  "9 months"  = 5,
+#                                "10 months" = 6,
+#                                  "12 months" = 7),
+#                      width = "120%",
+#                      selected = 5),  style="display:inline-block"),
 
 
 
     # SelectBagLimit is coming from renderUI in server.r
     uiOutput("SelectBagLimit"), 
 
-#tags$div(selectInput("SelectBagLimit",
-#                     "   Select Bag Limit size", 
- #                    choices = c("1 Fish"  = 1,
- #                                "2 Fish"  = 2,
-  #                               "3 Fish"  = 3,
-   #                              "4 Fish"  = 4,
-    #                             "5+ Fish" = 5),
-     #                width = "150%",
-      #               selected = 1),  style="display:inline-block"),
+# tags$div(selectInput("SelectBagLimit",
+#                      "   Select Bag Limit size", 
+#                      choices = c("1 Fish"  = 1,
+#                                  "2 Fish"  = 2,
+#                                 "3 Fish"  = 3,
+#                                "4 Fish"  = 4,
+#                               "5+ Fish" = 5),
+#                  width = "150%",
+#                 selected = 1),  style="display:inline-block"),
 
 
 
@@ -67,9 +68,9 @@ hr(),
 
     hr(),
 
-    h4(helpText("Select allowances for commercial gears.")),
+    h4(helpText("Input catch allocations")),
 
-    actionButton("go", "Go"),
+    actionButton("go", "Run simulation"),
     rHandsontableOutput('table'),
 
     #h5(textOutput("RemQuota"))
@@ -82,16 +83,17 @@ main_panel <-
     width = 12 - side_width,
      plotOutput("plot"),
     tableOutput("CatchGearTable"),
-    tableOutput("forecastTable"),
+    tableOutput("forecastTable")
     #plotOutput("catch_plot"),
-    verbatimTextOutput("debug_text"),
-    verbatimTextOutput("debug_text_output")
+    #verbatimTextOutput("debug_text"),
+    #verbatimTextOutput("debug_text_output")
   )
  
 # user interface
 ui <- 
   fluidPage(
     tags$style(type="text/css", "body {padding-top: 70px;}"),
+    tags$head(tags$style(HTML('#go{background-color:#dd4814}'))),
     
     navbarPage("Seabass catch allocation Tool",
                theme=shinytheme("united"),
