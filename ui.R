@@ -71,7 +71,7 @@ hr(),
 
     hr(),
 
-    h4(helpText("Input catch allocations")),
+    h4(helpText("Input catch allocations per vessel (in tonnes)")),
 
     actionButton("go", "Run simulation"),
     rHandsontableOutput('table'),
@@ -88,6 +88,7 @@ main_panel <-
     plotOutput("plot"),
     verbatimTextOutput("AllocTabCap"),
     tableOutput("vclsGearTable"),
+    verbatimTextOutput("CatchTabCap"),
     tableOutput("CatchGearTable"),
     verbatimTextOutput("ScenTabCap"),
     tableOutput("forecastTable")
