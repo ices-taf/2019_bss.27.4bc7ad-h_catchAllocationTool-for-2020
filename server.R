@@ -27,7 +27,7 @@ source("utilities.R")
 pop_age_2020 <- read.csv("data/pop_age_2020.csv")
 # H.Cons Retained mean weights from 'Bass47_STF 2019 assessment 20190514.xlsx'
 weights_age <- read.csv("data/weights_age.csv")
-weights_age_rec <- read.csv("data/weights_age_rec.csv")
+weights_age_rec <- read.csv("data/weights_age_Rec.csv")
 
 ## Fleet selectivity by age
 # assuming this is catch selectivity (i.e. L+D)
