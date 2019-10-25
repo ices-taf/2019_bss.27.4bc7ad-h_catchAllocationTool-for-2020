@@ -342,6 +342,11 @@ runForecast <-
   dimnames(CatchGearTable)[[2]][1] <- "Month"
   CatchGearTable[,"Month"] <- c(months[1:12], "TOTAL", "F")
 
+  ## Catch gear table as VCLS
+  vclsGearTable <- CatchGearTable[-nrow(CatchGearTable),c("Month",as.character(gears))]
+  for (ii in 1:(nrow(catches))) vclsGearTable[ii,-1] <- round(as.numeric(vclsGearTable[ii,-1])/noVessels[,2],1)
+  vclsGearTable[nrow(catches),1] <- "Annual catch/vessel"
+  
   ## Catch at age plot
   dataPlot <- as.data.frame(selectivity_age); dataPlot <- rbind(dataPlot[1:34,],dataPlot)
   levels(dataPlot$gear) <- c(levels(dataPlot$gear),"Recreational", "AdviceForecast")
@@ -403,7 +408,7 @@ runForecast <-
   forecastTable <- rbind(forecastTable, forecastTable, forecastTable)
   for (i in 2:3) for (j in 1:ncol(forecastTable)) forecastTable[i,j] <- as.character(AdviceScenarios[i-1,j])
   
-  return(list(catchNplot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable)) 
+  return(list(catchNplot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable, vclsGearTable=vclsGearTable)) 
 }
 
 

@@ -229,7 +229,7 @@ server <- function(input, output) {
     #TEMP# INPUT$CatchGear replaces input/ouput$CatchGear, which comes from the hands on table code below
     # This data file is not needed for the shiny operation
     # Note: users specify total catch by gear (part of this will be discarded)
-    #CatchGear <- read.csv("data/CatchGear.csv")
+    #CatchGearCatchGearTable <- read.csv("data/CatchGear.csv")
     CatchGear <- hot_to_r(input$table)
     # Calculate TOTAL
     CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum, na.rm=T)
@@ -322,7 +322,21 @@ server <- function(input, output) {
    
   }
    })
-  
+ 
+  output$vclsGearTable <- renderTable({
+    
+    req(input$TimeStep)
+    
+    if (input$TimeStep==12 ){
+      return(
+        reactiveForecast()$vclsGearTable)
+      
+    }else{
+      
+      rbind(c("Monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,1)),reactiveForecast()$vclsGearTable[c(13),])
+      
+    }
+  })
   
   output$forecastTable <- renderTable({
     reactiveForecast()$forecastTable
