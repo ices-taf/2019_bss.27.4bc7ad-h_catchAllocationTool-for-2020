@@ -87,6 +87,7 @@ main_panel <-
     verbatimTextOutput("FigureCap"),
     plotOutput("plot"),
     verbatimTextOutput("AllocTabCap"),
+    tableOutput("vclsGearTable"),
     tableOutput("CatchGearTable"),
     verbatimTextOutput("ScenTabCap"),
     tableOutput("forecastTable")
