@@ -84,14 +84,31 @@ hr(),
 main_panel <-    
   mainPanel(
     width = 12 - side_width,
-    verbatimTextOutput("FigureCap"),
-    plotOutput("plot"),
-    verbatimTextOutput("AllocTabCap"),
-    tableOutput("vclsGearTable"),
-    verbatimTextOutput("CatchTabCap"),
-    tableOutput("CatchGearTable"),
-    verbatimTextOutput("ScenTabCap"),
-    tableOutput("forecastTable")
+    
+  wellPanel(
+      plotOutput("plot"),
+       #verbatimTextOutput("FigureCap") 
+     h5(helpText("Figure 1: Simulated catch at age, by gear. 
+                 The dashed line (---) indicates the predicted catch at age in the ICES forecast."))),
+  wellPanel(
+    h5(helpText("Table 1: Simulated catch allocations. Catch allocations may be less than inputted since total
+                catch is limited to the chosen advice level.")),
+    br(),
+    #verbatimTextOutput("AllocTabCap"),
+    tableOutput("vclsGearTable")),
+  
+  wellPanel(
+    h5(helpText("Table 2: Simulated catch and F by gear, including recreational catches.")),
+  br(),
+    #verbatimTextOutput("CatchTabCap"),
+    tableOutput("CatchGearTable")),
+  
+  wellPanel(
+  
+    h5(helpText("Table 3: Forecast scenarios.")),
+    br(),
+    #verbatimTextOutput("ScenTabCap"),
+    tableOutput("forecastTable"))
     #plotOutput("catch_plot"),
     #verbatimTextOutput("debug_text"),
     #verbatimTextOutput("debug_text_output")
