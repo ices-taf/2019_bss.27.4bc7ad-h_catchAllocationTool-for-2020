@@ -334,7 +334,7 @@ server <- function(input, output) {
       
     }else{
       
-      rbind(c("Monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,1)),reactiveForecast()$vclsGearTable[c(13),])
+      rbind(c("Monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,2)),reactiveForecast()$vclsGearTable[c(13),])
       
     }
   })
@@ -367,7 +367,12 @@ server <- function(input, output) {
     
     output$AllocTabCap <- renderText({ 
       #return(paste("<span style=\"color:red\">","t","</span>"))
-      txt <- "Simulated catch allocations. Catches are limited to the chosen advice level."
+      txt <- "Simulated catch allocations. Catch allocations may be less than inputted since total catch is limited to the chosen advice level."
+    })
+   
+    output$CatchTabCap <- renderText({ 
+      #return(paste("<span style=\"color:red\">","t","</span>"))
+      txt <- "Simulated catch and F by gear, including recreational catches."
     })
     
     output$ScenTabCap <- renderText({ 
