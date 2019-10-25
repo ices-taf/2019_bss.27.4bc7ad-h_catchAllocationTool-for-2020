@@ -77,7 +77,7 @@ runForecast <-
            discard_prop, discard_Sel, catches,
            Monthly, ICESadvComm, ICESadv,
            Myr, CatchGear, recCatch, catchRec_n,
-           FbarRec, ICESadvOpt, AdviceForecastCatchAge) {
+           FbarRec, ICESadvOpt, AdviceForecastCatchAge, noVessels) {
 
   #####-------------------------
   ### Prepare data objects
