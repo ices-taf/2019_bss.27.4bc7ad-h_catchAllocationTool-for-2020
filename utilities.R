@@ -112,7 +112,7 @@ runForecast <-
         remaining <- ICESadvComm-caught
         if (remaining < sum(catches[i,])) {
           catches[i,] <- catches[i,] * (remaining/sum(catches[i,]))
-          for (ii in (i+1):(length(months)-1)) catches[ii,] <- 0
+          if (i!=(length(months)-1)) for (ii in (i+1):(length(months)-1)) catches[ii,] <- 0
           switch <- F  
         }
       } # end of switch loop
