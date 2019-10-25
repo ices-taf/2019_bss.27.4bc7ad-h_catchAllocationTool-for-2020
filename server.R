@@ -29,6 +29,10 @@ pop_age_2020 <- read.csv("data/pop_age_2020.csv")
 weights_age <- read.csv("data/weights_age.csv")
 weights_age_rec <- read.csv("data/weights_age_Rec.csv")
 
+## Fleet size (no vessel by gear)
+noVessels <- read.csv("data/Number_vessels.csv")
+
+
 ## Fleet selectivity by age
 # assuming this is catch selectivity (i.e. L+D)
 selectivity_age <- read.csv("data/selectivity_age_16+.csv")
@@ -165,7 +169,11 @@ server <- function(input, output) {
 
   output$RemQuota <- renderText({ 
     
-    leftOver<-round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0)
+    tmpX <- valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),]
+    for (ii in 1: nrow(tmpX)) tmpX[ii,] <- tmpX[ii,]*noVessels[,2]
+    leftOver<-round(reactiveData()$ICESadvComm - sum(tmpX, na.rm = TRUE),0)
+    
+    #leftOver<-round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0)
     
     if(leftOver < 0){
       
@@ -228,7 +236,10 @@ server <- function(input, output) {
     
     catches <- CatchGear
     catches[is.na(catches)] <- 0
-
+    for (ii in 1:(nrow(catches)-1)) catches[ii,] <- catches[ii,]*noVessels[,2]
+    CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum, na.rm=T)
+    
+    
     # return things we need
     list(CatchGear = CatchGear,
          FbarRec = FbarRec, 

@@ -32,13 +32,15 @@ gearCatches <- function(fmults, dat, pop, Frec, disSel, disProp, M, repress=T){
     for (gg in 1:length(gears)) {
       landN[,gg] <- pop*(1-exp(-zmort)) * (fmort[,gg]/zmort)
     }
+    catchmort <- fmort
     disN <- matrix(0,nrow=17,ncol=length(gears), dimnames=list(c(0:15,"16+"), gears))
     if (sum(projCatch[,1:length(gears)])!=0) {
     activeDisProp <- disProp
     activeDisProp[,2] <-   (disProp[,2]*projCatch[,1:length(gears)])/sum(projCatch[,1:length(gears)])
     for (gg in 1:length(gears)) {
        disN[,gg] <- pop*(1-exp(-zmort)) * (((dismort*activeDisProp[activeDisProp[,"Gear"]==gears[gg],2])/sum(activeDisProp[,2]))/zmort)
-      }
+       catchmort[,gg] <- catchmort[,gg] + ((dismort*activeDisProp[activeDisProp[,"Gear"]==gears[gg],2])/sum(activeDisProp[,2]))
+       }
     } else {
     for (gg in 1:length(gears)) {
         disN[,gg] <- pop*0
@@ -53,7 +55,7 @@ gearCatches <- function(fmults, dat, pop, Frec, disSel, disProp, M, repress=T){
     # }
     catchN <- disN + landN
     return(list(gearCatches=projCatch, catch_n=catchN, land_n=landN, dis_n=disN, 
-                catch_f=fmort+dismort, land_f=fmort, dis_f=dismort, total_z=zmort))
+                catch_f=catchmort, land_f=fmort, dis_f=dismort, total_z=zmort))
   }
   
 }
@@ -112,7 +114,7 @@ runForecast <-
         remaining <- ICESadvComm-caught
         if (remaining < sum(catches[i,])) {
           catches[i,] <- catches[i,] * (remaining/sum(catches[i,]))
-          for (ii in (i+1):(length(months)-1)) catches[ii,] <- 0
+          if (i!=(length(months)-1)) for (ii in (i+1):(length(months)-1)) catches[ii,] <- 0
           switch <- F  
         }
       } # end of switch loop
@@ -255,8 +257,11 @@ runForecast <-
   
   ### F values
   ## Total
-  totalF <- out[[1]]$total_z-Myr  
-  if (Monthly) for (i in 2:(length(months)-1)) totalF <- totalF + out[[i]]$total_z   
+  if (!Monthly) totalF <- out[[1]]$total_z-Myr  
+  if (Monthly) {
+    totalF <- out[[1]]$total_z-M
+    for (i in 2:(length(months)-1)) totalF <- totalF + out[[i]]$total_z-M   
+    }
   Ftotbar <- mean(totalF[5:16]) # ages 4-15
   if (Ftotbar<0.2) Ftotbar <- round(Ftotbar,3) else Ftotbar <- round(Ftotbar,2)
   
@@ -329,6 +334,7 @@ runForecast <-
   
   # Add total column
   CatchGearTable[,"TOTAL"] <- apply(CatchGearTable[,1:(length(gears)+1)],1,sum, na.rm=T)
+  CatchGearTable["F","TOTAL"] <- Ftotbar #to account for rounding errors
   # Round
   CatchGearTable[-nrow(CatchGearTable),] <- round(CatchGearTable[-nrow(CatchGearTable),],0)
   # Add months
