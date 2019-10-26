@@ -12,6 +12,7 @@ require(shiny)
 require(rhandsontable)
 require(markdown)
 require(shinythemes)
+require(DT)
 
 
 #####-------------------------
@@ -114,7 +115,7 @@ server <- function(input, output) {
                   "10 months" = 6,
                   "12 months" = 7),
       width = "40%",
-      selected = 5)
+      selected = 4)
   })
   # 
   output$SelectBagLimit <- renderUI({
@@ -339,9 +340,29 @@ server <- function(input, output) {
     }
   })
   
-  output$forecastTable <- renderTable({
-    reactiveForecast()$forecastTable
-  })
+  
+  # #Output forecast table (table 3)
+  # output$forecastTable <- renderTable({
+  #   reactiveForecast()$forecastTable
+  # })
+  
+  #Output forecast table (table 3)
+  output$forecastTable <- DT::renderDataTable(
+    DT::datatable(reactiveForecast()$forecastTable, options = list(dom = 't')) %>% formatStyle(
+      'Basis',
+      target = 'row',
+      color = styleEqual("Simulated Scenario",'white'),
+      backgroundColor = styleEqual("Simulated Scenario", '#dd4814')
+      
+  ))
+  
+  
+
+  
+  
+  
+  
+  
   
   #output the value for the advice type choosen
   output$ICESadv <- renderText({
@@ -359,8 +380,8 @@ server <- function(input, output) {
       " t.")
     
   })
-  
- 
+    
+
     # output$FigureCap <- renderText({ 
     #   txt <- "Simulated catch at age, by gear. The dashed line (---) indicates the predicted catch at age in the ICES forecast."
     #   })

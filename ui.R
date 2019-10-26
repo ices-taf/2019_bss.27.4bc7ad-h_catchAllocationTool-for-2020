@@ -108,33 +108,27 @@ main_panel <-
     h5(helpText("Table 3: Forecast scenarios.")),
     br(),
     #verbatimTextOutput("ScenTabCap"),
-    tableOutput("forecastTable"))
+    
+    #tableOutput("forecastTable"))
+  
+  DT::dataTableOutput("forecastTable"))
+  
     #plotOutput("catch_plot"),
     #verbatimTextOutput("debug_text"),
     #verbatimTextOutput("debug_text_output")
   )
  
 # user interface
-ui <- 
-  fluidPage(
-    tags$style(type="text/css", "body {padding-top: 70px;}"),
-    tags$head(tags$style(HTML('#go{background-color:#dd4814}'))),
-    
-    navbarPage("Seabass catch allocation Tool",
-               theme=shinytheme("united"),
-               position ="fixed-top",
-               
-               #img(src='ICES_logo_white.png',
-               #width="111", 
-               #height="53",
-               #align = "right"),
-               
+ui <- shiny::navbarPage(
+  
+  title = div(img(src='ICES_logo_toolName.png',style="margin-top: -14px; padding-right:10px;padding-bottom:10px", height = 60)),
+  #windowTitle="Seabass catch allocation Tool", 
+
                tabPanel("Instructions",
                         
                         includeMarkdown("Instructions.Rmd")
                         
                         ),
-                        
                         
                         
                tabPanel("Allocations",
@@ -150,7 +144,18 @@ ui <-
     tabPanel(
       "Useful links",
       includeMarkdown("UsefulLinks.Rmd"),
-      verbatimTextOutput("summary")) 
+      verbatimTextOutput("summary")
+
+      ),
+    
+    tags$style(type="text/css", "body {padding-top: 70px;}"),
+    tags$head(tags$style(HTML('#go{background-color:#dd4814}'))),
+    theme=shinytheme("united"),
+    position ="fixed-top",
+    
+    tags$script(HTML("var header = $('.navbar > .container-fluid');
+ header.append('<div style=\"float:right\"><ahref=\"https://github.com/ices-taf/2019_4017-19_TechnicalService\"><img src=\"GitHub-Mark-32px.png\" alt=\"alt\" style=\"margin-top: -14px; padding-right:5px;padding-top:25px;\"> </a>`</div>');
+ console.log(header)"))
     
                )
-  )
+ 
