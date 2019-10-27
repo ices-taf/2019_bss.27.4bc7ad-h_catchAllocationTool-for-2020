@@ -4,23 +4,23 @@ output: html_document
 ---
 
 
-**Links relevant for Sea bass (Dicentrarchus labrax) in divisions 4.b–c, 7.a, and 7.d–h (central and southern North Sea, Irish Sea, English Channel, Bristol Channel, and Celtic Sea)**  
+### **Links relevant for Sea bass (Dicentrarchus labrax) in divisions 4.b–c, 7.a, and 7.d–h (central and southern North Sea, Irish Sea, English Channel, Bristol Channel, and Celtic Sea)**  
+
+<br>  
+
+#### [ICES advice on fishing opportunities for 2019 and 2020](http://ices.dk/sites/pub/Publication%20Reports/Advice/2019/2019/bss.27.4bc7ad-h.pdf)  
 
 
-
-[ICES advice on fishing opportunities for 2019 and 2020](http://ices.dk/sites/pub/Publication%20Reports/Advice/2019/2019/bss.27.4bc7ad-h.pdf)  
-
-
-[Report section for seabass of the 2019 Working Group for the Celtic Seas Ecoregion (WGCSE) 2019](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/Fisheries%20Resources%20Steering%20Group/2019/WGCSE/32_Seabass_4bc7d_h_2019.pdf)  
+#### [Report section for seabass of the 2019 Working Group for the Celtic Seas Ecoregion (WGCSE) 2019](http://www.ices.dk/sites/pub/Publication%20Reports/Expert%20Group%20Report/Fisheries%20Resources%20Steering%20Group/2019/WGCSE/32_Seabass_4bc7d_h_2019.pdf)  
 
 
-[Stock annex](http://www.ices.dk/sites/pub/Publication%20Reports/Stock%20Annexes/2018/bss.27.4bc7d%E2%80%93h_SA.pdf)  
+#### [Stock annex](http://www.ices.dk/sites/pub/Publication%20Reports/Stock%20Annexes/2018/bss.27.4bc7d%E2%80%93h_SA.pdf)  
 
 
-[WGCSE](https://www.ices.dk/community/groups/Pages/WGCSE.aspx)  
+#### [WGCSE](https://www.ices.dk/community/groups/Pages/WGCSE.aspx)  
 
 
-[European Commission seabass webpage](https://ec.europa.eu/fisheries/cfp/fishing_rules/sea-bass_en)  
+#### [European Commission seabass webpage](https://ec.europa.eu/fisheries/cfp/fishing_rules/sea-bass_en)  
 
 <br>  
 

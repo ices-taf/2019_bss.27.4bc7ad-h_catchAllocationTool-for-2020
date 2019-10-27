@@ -85,6 +85,8 @@ main_panel <-
   mainPanel(
     width = 12 - side_width,
     
+    conditionalPanel("output.hide_panel",
+    
   wellPanel(
       plotOutput("plot"),
        #verbatimTextOutput("FigureCap") 
@@ -103,7 +105,9 @@ main_panel <-
     #verbatimTextOutput("CatchTabCap"),
     tableOutput("CatchGearTable")),
   
-  wellPanel(
+   wellPanel(
+     fluidRow(
+       column(width=12),
   
     h5(helpText("Table 3: Forecast scenarios.")),
     br(),
@@ -117,7 +121,8 @@ main_panel <-
     #verbatimTextOutput("debug_text"),
     #verbatimTextOutput("debug_text_output")
   )
- 
+    )
+  )
 # user interface
 ui <- shiny::navbarPage(
   

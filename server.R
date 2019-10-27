@@ -357,13 +357,6 @@ server <- function(input, output) {
   ))
   
   
-
-  
-  
-  
-  
-  
-  
   #output the value for the advice type choosen
   output$ICESadv <- renderText({
     paste0(
@@ -380,6 +373,12 @@ server <- function(input, output) {
       " t.")
     
   })
+    
+    
+   #hiding wellPanels
+    
+    output$hide_panel <- eventReactive(input$go, TRUE, ignoreInit = TRUE)
+    outputOptions(output, "hide_panel", suspendWhenHidden = FALSE)
     
 
     # output$FigureCap <- renderText({ 
