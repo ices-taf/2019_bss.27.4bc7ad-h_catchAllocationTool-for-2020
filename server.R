@@ -335,7 +335,7 @@ server <- function(input, output) {
       
     }else{
       
-      rbind(c("Monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,2)),reactiveForecast()$vclsGearTable[c(13),])
+      rbind(c(" Average monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,2)),reactiveForecast()$vclsGearTable[c(13),])
       
     }
   })

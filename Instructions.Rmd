@@ -8,7 +8,7 @@ output: html_document
 ***
 
 
-#### The seabass catch allocation tool was developed to be used **exclusively** for Sea bass (Dicentrarchus labrax) in divisions 4.b–c, 7.a, and 7.d–h (central and southern North Sea, Irish Sea, English Channel, Bristol Channel, and Celtic Sea).  
+#### The seabass catch allocation tool was developed to be used **exclusively** for Sea bass (Dicentrarchus labrax) in divisions 4.b–c, 7.a, and 7.d–h (central and southern North Sea, Irish Sea, English Channel, Bristol Channel, and Celtic Sea) in 2020.  
 
 <br> 
 
