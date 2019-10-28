@@ -361,7 +361,7 @@ runForecast <-
               aes(x = Age, y = catch_n, fill = gear)) +
     geom_line(data = subset(dataPlot, gear=="AdviceForecast"), linetype=2,
               aes(x = Age, y = catch_n))  +
-    ylab("Catch at Age (thousands)") +
+    ylab("Catch-at-Age (thousands)") +
     theme(plot.background = element_rect(fill = "grey96"))+
     theme(legend.background = element_rect(fill="grey96", size=0.5, linetype="solid")) +
     theme(panel.background = element_rect(fill = "grey96"))
