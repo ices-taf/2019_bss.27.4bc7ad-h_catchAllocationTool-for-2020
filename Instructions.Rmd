@@ -8,7 +8,7 @@ output: html_document
 ***
 
 
-#### The seabass catch allocation tool was developed to be used **exclusively** for Sea bass (Dicentrarchus labrax) in divisions 4.b–c, 7.a, and 7.d–h (central and southern North Sea, Irish Sea, English Channel, Bristol Channel, and Celtic Sea) in 2020.  
+#### The sea bass catch allocation tool was developed to be used **exclusively** for sea bass (*Dicentrarchus labrax*) in divisions 4.b–c, 7.a, and 7.d–h (central and southern North Sea, Irish Sea, English Channel, Bristol Channel, and Celtic Sea) in 2020.  
 
 <br> 
 
@@ -16,11 +16,11 @@ output: html_document
 
 <br> 
 
-#### The seabass catch allocation tool was developed with the intent to aid managers and stakeholders to test multiple catch allocation schemes by gear and different regulations for recreational catches using the ICES catch advice as a maximum.  
+#### The sea bass catch allocation tool was developed with the intent to aid managers and stakeholders to test multiple catch allocation schemes by gear and different regulations for recreational catches, using the ICES catch advice as a maximum.  
 
 <br> 
 
-#### Although this tool is designed to be in line with the assumptions used in the seabass advice there are instances where it deviates from them. The tool can be used to allocate monthly options, while the assessment is run on annual time step. Also, depending on the gear options selected, the overall commercial catch at age may differ from that assumed in the ICES forecast.  
+#### Although this tool is designed to be in line with the assumptions used in the sea bass advice there are instances where it deviates from them. The tool can be used to allocate monthly options, while the assessment is run an annual time step. Also, depending on the gear options selected, the overall commercial catch- at-age may differ from that assumed in the ICES forecast.  
 
 <br>  
 <br>
@@ -31,13 +31,14 @@ output: html_document
 #### **Inputs:**  
 
 
- 1. Choose catch advice. Two options are available:
-    1. EU MAP: F~MSY~ × SSB~2020~ / MSY~Btrigger~
-    1. EU MAP F~MSY~ ~lower~ × SSB~2020~ / MSY~Btrigger~
- 2. Choose time step to be used in the allocation simulation.
- 3. Select the management options to be applied to the recreational component (default options are the current management measures in place).
- 4. Input vessel catch allocation by gears in the table (in tonnes).
- 5. Click `Run simulation` to test the allocations.
+
+#### 1. Select catch advice. Two options are available:
+####    1. EU MAP F<sub>MSY</sub> × SSB<sub>2020</sub> / MSY B<sub>trigger</sub>
+####    1. EU MAP F<sub>MSY</sub> <sub>lower</sub> × SSB<sub>2020</sub> / MSY B<sub>trigger</sub>
+#### 2. Select the time step to be used in the allocation simulation.
+#### 3. Select the management options to be applied to the recreational component (default options are the current management measures in place).
+#### 4. Input vessel catch allocation by gears in the table (in tonnes).
+#### 5. Click `Run simulation` to test the allocations.
 
 <br> 
 
@@ -48,15 +49,15 @@ output: html_document
 #### **Outputs:** 
 
 
-#### On the top right it is shown a plot of catch at age in thousands by gear. The black dashed line is the catch at age for the advice given in the main ICES advice for this stock.  
+#### On the top right is shown a plot of catch-at-age in thousands by gear. The black dashed line is the catch-at-age for the advice given in the main ICES advice for this stock.  
 
 <br> 
 
-#### Below the plot, a table is shown with the results of the simulation. Since the catch allocations are not allowed to exceed the ICES advice, final catch allocations may be less than those that were inputted. For monthly simulations, catch allocations are taken each month until the advice value is reached, for subsequent months the catch is set to zero.  
+#### Below the plot, a table is shown with the results of the simulation. Since the catch allocations are not allowed to exceed the ICES advice, final catch allocations may be less than those initially entered. For monthly simulations, the initial catch allocations are taken each month until the advice value is reached. For subsequent months the catch is set to zero.  
 
 <br> 
 
-#### Finally the last table shows the summary of the forecast including the impact in the SSB and the change in advice.  The table compares the simulated catch allocations with the forecast scenarios from the ICES advice.  
+#### The final table shows the summary of the forecast, including the impact in the SSB and the change in advice. The table compares the simulated catch allocations with the forecast scenarios from the ICES advice.  
 
 <br> 
 <br> 
@@ -64,17 +65,17 @@ output: html_document
 ### **Notes:**  
 *** 
 
-#### The total catch available for the commercial gears is the ICES advice less the expected recreational catch.  
+#### The total catch available for the commercial gears is the ICES advice minus the expected recreational catch.  
 
 
-#### The simulation estimates the catch at age that will lead to the tonnage specified for each gear based on an analysis of the selectivity of each gear. As such, it may not be possible to catch the exact tonnage inputted, and resulting values may differ by a few tonnes. The outputs are values rounded to the nearest tonne. 
+#### The simulation estimates the catch-at-age that will lead to the tonnage specified for each gear, based on an analysis of the selectivity of each gear. As such, it may not be possible to catch the exact tonnage entered, and resulting values may differ by a few tonnes. The outputs are values rounded to the nearest tonne. 
 
 <br>
 
-#### Discards proportions by gear (amount of the catch that is discarded) have been estimated using French and UK data from 2016 to 2018. There are insufficient data to accurately estimate discard selectivity by gear type, so the same discard selectivity as used in the ICES forecast is applied for all gears. Depending on the allocations by gear, the total amount of discards may vary from that forecasted in the ICES advice.  
+#### Discard proportions by gear (amount of the catch that is discarded) have been estimated using French and UK data from 2016 to 2018. Current data are insufficient to accurately estimate discard selectivity by gear type, so the same discard selectivity as used in the ICES forecast is applied for all gears. Depending on the allocations by gear, the total amount of discards may vary from that forecasted in the ICES advice.  
 
 <br> 
 
-#### This tool has gone extensive debugging and error checking. Nevertheless, if you encounter any inconsistency or bug please let us know by emailing us at accessions@ices.dk
+#### This tool has gone through extensive debugging and error checking. Nevertheless, if you encounter any inconsistency or bug please let us know by emailing us at accessions@ices.dk
 <br> 
 <br> 
