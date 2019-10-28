@@ -32,13 +32,13 @@ output: html_document
 
 
 
- 1. Choose catch advice. Two options are available:
-    1. EU MAP: F<sub>MSY</sub> × SSB<sub>2020</sub> / MSY<sub>Btrigger</sub>
-    1. EU MAP F<sub>MSY</sub> <sub>lower</sub> × SSB<sub>2020</sub> / MSY<sub>Btrigger</sub>
- 2. Choose time step to be used in the allocation simulation.
- 3. Select the management options to be applied to the recreational component (default options are the current management measures in place).
- 4. Input vessel catch allocation by gears in the table (in tonnes).
- 5. Click `Run simulation` to test the allocations.
+#### 1. Choose catch advice. Two options are available:
+####    1. EU MAP: F<sub>MSY</sub> × SSB<sub>2020</sub> / MSY<sub>Btrigger</sub>
+####    1. EU MAP F<sub>MSY</sub> <sub>lower</sub> × SSB<sub>2020</sub> / MSY<sub>Btrigger</sub>
+#### 2. Choose time step to be used in the allocation simulation.
+#### 3. Select the management options to be applied to the recreational component (default options are the current management measures in place).
+#### 4. Input vessel catch allocation by gears in the table (in tonnes).
+#### 5. Click `Run simulation` to test the allocations.
 
 <br> 
 

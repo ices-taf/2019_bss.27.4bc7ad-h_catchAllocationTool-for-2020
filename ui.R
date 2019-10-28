@@ -25,7 +25,7 @@ ui <- shiny::navbarPage(
              sidebarPanel(
                width = side_width,
                radioButtons("AdviceType",
-                            label = h4("Select catch advice"),
+                            label = h4("Select 2020 catch advice"),
                             choices = list("EU MAP Fmsy" = "MSY", 
                                            "EU MAP Fmsy lower" = "MSYlow"), 
                             inline = TRUE, 
@@ -81,7 +81,7 @@ ui <- shiny::navbarPage(
                
                hr(),
                
-               h4(helpText("Input catch allocations per vessel (in tonnes)")),
+               h4(helpText("Input vessel catch limits (in tonnes)")),
                
                actionButton("go", "Run simulation"),
                rHandsontableOutput('table'),
@@ -103,7 +103,7 @@ ui <- shiny::navbarPage(
                                 h5(helpText("Figure 1: Simulated catch at age, by gear. 
                  The dashed line (---) indicates the predicted catch at age in the ICES forecast."))),
                               wellPanel(
-                                h5(helpText("Table 1: Simulated catch allocations. Catch allocations may be less than inputted since total
+                                h5(helpText("Table 1: Simulated vessel catch limits. Catch allocations may be less than inputted since total
                 catch is limited to the chosen advice level.")),
                                 br(),
                                 #verbatimTextOutput("AllocTabCap"),
@@ -123,7 +123,8 @@ ui <- shiny::navbarPage(
              column(12,
                     wellPanel(
                       
-                      h5(helpText("Table 3: Forecast scenarios.")),
+                      h5(helpText("Table 3: Forecast scenarios. Comparasion between simulated scenario (highlighted) and basis of advice for 2020"), 
+                                 
                       br(),
                       
                       DT::dataTableOutput("forecastTable"))
