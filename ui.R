@@ -1,4 +1,11 @@
 
+require(shiny)
+require(rhandsontable)
+require(shinythemes)
+require(markdown)
+require(dplyr)
+require(ggplot2)
+
 # width of input panel in in allocations tab (full page = 12)
 side_width <- 5
 

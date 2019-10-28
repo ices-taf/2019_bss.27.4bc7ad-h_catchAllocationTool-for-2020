@@ -12,13 +12,12 @@ require(shiny)
 require(rhandsontable)
 require(markdown)
 require(shinythemes)
-require(DT)
+require(Matrix)
 
 
 #####-------------------------
 ### Additional functions
 source("utilities.R")
-#source("utilities.R")
 
 #####-------------------------
 ### Read in required data
@@ -347,7 +346,7 @@ server <- function(input, output) {
     DT::datatable(
       reactiveForecast()$forecastTable, 
       options = list(dom = 't')) %>% 
-    formatStyle(
+    DT::formatStyle(
       'Basis',
       target = 'row',
       color = styleEqual("Simulated Scenario",'white'),
