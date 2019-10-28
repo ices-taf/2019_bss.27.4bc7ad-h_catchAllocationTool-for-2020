@@ -92,17 +92,15 @@ rowNames <- list("12" = c(month.name), "1" = c("Year"))
 #####-------------------------00000000000000000000000000000000-------------------------#####
 ### SERVER function
 #####-------------------------00000000000000000000000000000000-------------------------#####
-server <- function(input, output) {
-  source("utilities.R")
 
+source("utilities.R")
+
+server <- function(input, output) {
 
   #####-------------------------
   ### Dynamic input sections
 
-
-  ########-------------------------------
-  #Code to select the recreational options from section boxes
-  
+  # Code to select the recreational options from section boxes  
   output$SelectOpenSeason <- renderUI({
     selectInput(
       "OpenSeason", 
@@ -117,7 +115,7 @@ server <- function(input, output) {
       width = "40%",
       selected = 4)
   })
-  # 
+
   output$SelectBagLimit <- renderUI({
     selectInput(
       "BagLimit", 
@@ -132,65 +130,10 @@ server <- function(input, output) {
   })
 
 
-  ##Dynamic input table
-  #values <- reactiveValues(data = defaultDF) ## assign it with NULL
-  
-  valuesUser <- reactiveValues(data = NULL) ## assign it with NULL
-  
-  observeEvent(input$TimeStep, {
-    req(input$TimeStep)
-    valuesUser$data <- data.frame(
-      row.names = rowNames[[input$TimeStep]],
-      Demersal_Trawl=rep(NA_integer_, as.integer(input$TimeStep)),
-      Gill_Nets=rep(NA_integer_, as.integer(input$TimeStep)), 
-      Hooks_and_Lines=rep(NA_integer_, as.integer(input$TimeStep)),
-      Seines=rep(NA_integer_, as.integer(input$TimeStep)),
-      stringsAsFactors = FALSE
-    )
-  })
-  
-  
-  # changes in numericInput sets all (!) new values
-  observe({
-    req(input$table)
-    DF <- hot_to_r(input$table)
-    DF[setdiff(rownames(DF),"TOTAL"),]
-    DF["TOTAL",] <- colSums(DF[setdiff(rownames(DF),"TOTAL"),], na.rm = TRUE)
-    names(DF) <- gsub("_"," ",names(DF))
-    valuesUser$data <- DF
-  })
-  
-  output$table <- renderRHandsontable({
-    req(valuesUser$data)
-    rhandsontable(valuesUser$data, rowHeaderWidth = 90, colWidths = 119) %>%
-      hot_row(nrow(valuesUser$data), readOnly = TRUE)
-  })
-
-  
-  # # Line that calculates the remaining of catches after the recreational options
-
-  output$RemQuota <- renderText({ 
-    
-    tmpX <- valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),]
-    for (ii in 1: nrow(tmpX)) tmpX[ii,] <- tmpX[ii,]*noVessels[,2]
-    leftOver<-round(reactiveData()$ICESadvComm - sum(tmpX, na.rm = TRUE),0)
-    
-    #leftOver<-round(reactiveData()$ICESadvComm - sum(valuesUser$data[setdiff(rownames(valuesUser$data),"TOTAL"),], na.rm = TRUE),0)
-    
-    if(leftOver < 0){
-      
-      return(paste("Quota remaining: ", "<span style=\"color:red\">",leftOver,"t","</span>"))
-      
-    }else{
-      
-      return(paste("Quota remaining: ", "<span style=\"color:green\">",leftOver,"t","</span>"))
-    }
-      })
-  
-
   #####-------------------------
   ### Reactive section
   
+  # process options, but do not run forecast
   reactiveData <- reactive({
     # Get advice value and total Z from advcie forecast
     ICESadvOpt <- input[["AdviceType"]] 
@@ -204,12 +147,17 @@ server <- function(input, output) {
 
     ## Get multiplier
     RecF <- RecFs[as.numeric(input$OpenSeason), as.numeric(input$BagLimit)+1]
+    # on first loop, RecF is not initialised, so put in a dummy value to avoid errors
+    if (length(RecF) == 0) {
+      RecF <- RecFs[1,1]
+    }
     
     ## calculate recreational F based on management measures
     # uses selected multiplier and 2012+2019 F@A and Fbar to estimate 2020 F@A
     f_age_rec_2020 <- 
       cbind.data.frame(Age = weights_age_rec$Age[1:length(F_age_rec_2019)], 
                        f_age_rec_2020 = RecF * F_age_rec_2019 * Fbar_rec_2012 / Fbar_rec_2019)
+
     # Mean F for recreational ages 4-15
     FbarRec <- mean(f_age_rec_2020[5:16, 2])
 
@@ -228,11 +176,16 @@ server <- function(input, output) {
     Monthly <- input$TimeStep == 12
     
     ## Fleet catches
-    #TEMP# INPUT$CatchGear replaces input/ouput$CatchGear, which comes from the hands on table code below
-    # This data file is not needed for the shiny operation
-    # Note: users specify total catch by gear (part of this will be discarded)
-    #CatchGear <- read.csv("data/CatchGear.csv")
-    CatchGear <- hot_to_r(input$table)
+    if (!is.null(input$table)) {
+      CatchGear <- hot_to_r(input$table)      
+    } else {
+      # initialise CatchGear variable to stop errors
+      CatchGear <- data.frame(Demersal_Trawl = 0, 
+                               Gill_Nets = 0,
+                               Hooks_and_Lines = 0,
+                               Seines = 0)
+    }
+
     names(CatchGear) <- gsub(" ","_",names(CatchGear))
     # Calculate TOTAL
     CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum, na.rm=T)
@@ -242,8 +195,7 @@ server <- function(input, output) {
     for (ii in 1:(nrow(catches)-1)) catches[ii,] <- catches[ii,]*noVessels[,2]
     CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum, na.rm=T)
     
-    
-    # return things we need
+    # collect outputs
     list(CatchGear = CatchGear,
          FbarRec = FbarRec, 
          recCatch = recCatch,
@@ -259,9 +211,9 @@ server <- function(input, output) {
          )
   })
 
+  # run forecast on click "Run Simulation"
   reactiveForecast <- eventReactive(input$go, {
-
-   dat <- reactiveData()
+    dat <- reactiveData()
 
     with(dat,
         runForecast(
@@ -292,9 +244,60 @@ server <- function(input, output) {
 
 
   #####-------------------------
+  # Dynamic input table of catches
+  
+  valuesUser <- reactiveValues(data = NULL) ## assign it with NULL
+  
+  observeEvent(input$TimeStep, {
+    req(input$TimeStep)
+    valuesUser$data <- data.frame(
+      row.names = rowNames[[input$TimeStep]],
+      Demersal_Trawl = rep(NA, input$TimeStep),
+      Gill_Nets = rep(NA, input$TimeStep), 
+      Hooks_and_Lines = rep(NA, input$TimeStep),
+      Seines = rep(NA, input$TimeStep),
+      stringsAsFactors = FALSE
+    )
+  })
+  
+  
+  # changes in numericInput sets all (!) new values
+  observe({
+    req(input$table)
+    DF <- hot_to_r(input$table)
+    DF[setdiff(rownames(DF),"TOTAL"),]
+    DF["TOTAL",] <- colSums(DF[setdiff(rownames(DF),"TOTAL"),], na.rm = TRUE)
+    names(DF) <- gsub("_"," ",names(DF))
+    valuesUser$data <- DF
+  })
+  
+
+  #####-------------------------
   ### prepare outputs
 
-  # # Line that fetches the correct value for recreational F depending on the selections made
+  output$table <- renderRHandsontable({
+    req(valuesUser$data)
+    rhandsontable(valuesUser$data, rowHeaderWidth = 90, colWidths = 119) %>%
+      hot_row(nrow(valuesUser$data), readOnly = TRUE)
+  })
+
+  
+  # Line that calculates the remaining of catches after the recreational options
+  output$RemQuota <- renderText({
+    # get data input by user
+    tmpX <- valuesUser$data[setdiff(rownames(valuesUser$data), "TOTAL"), ]
+    # loop over rows and scale by number of vessels per fleet
+    for (ii in 1:nrow(tmpX)) tmpX[ii,] <- tmpX[ii,] * noVessels[,2]
+    # sum catch and subtract from the advice
+    leftOver <- round(reactiveData()$ICESadvComm - sum(tmpX, na.rm = TRUE), 0)
+    
+    # format output
+    colour <- if (leftOver < 0) "red" else "green" 
+    paste0("Quota remaining: <span style=\"color:", colour, "\"> ", leftOver," t</span>")
+  })
+
+
+  # Line that fetches the correct value for recreational F depending on the selections made
   output$RecF <- renderText({
     paste0(
       "For the options above, ",
@@ -305,130 +308,72 @@ server <- function(input, output) {
     )
   })
   
-
+  
+  # plot catch at age
   output$plot <- renderPlot({
     reactiveForecast()$catchNplot
   })
 
 
-  #Output to get a dynamic output table using the time step 
+  # Output to get a dynamic output table using the time step 
   output$CatchGearTable <- renderTable({
-    
-  req(input$TimeStep)
-    
-  if (input$TimeStep==12 ){
-  return(
-  reactiveForecast()$CatchGearTable)
-   
-  }else{
-    
-    reactiveForecast()$CatchGearTable[c(13,14),]
-   
-  }
-   })
+    req(input$TimeStep)
+      
+    if (input$TimeStep == 12) {
+      reactiveForecast()$CatchGearTable
+    } else {
+      reactiveForecast()$CatchGearTable[c(13,14),]
+    }
+  })
  
+
   output$vclsGearTable <- renderTable({
-    
     req(input$TimeStep)
     
-    if (input$TimeStep==12 ){
-      return(
-        reactiveForecast()$vclsGearTable)
-      
-    }else{
-      
-      rbind(c("Average monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,2)),reactiveForecast()$vclsGearTable[c(13),])
-      
+    if (input$TimeStep == 12) {
+      reactiveForecast()$vclsGearTable
+    } else {      
+      rbind( 
+        c("Average monthly catch/vessel", 
+          round(as.numeric(reactiveForecast()$vclsGearTable[13, -1]) / 12, 2)),
+        reactiveForecast()$vclsGearTable[13, ]
+      )
     }
   })
   
-  
-  # #Output forecast table (table 3)
-  # output$forecastTable <- renderTable({
-  #   reactiveForecast()$forecastTable
-  # })
-  
-  #Output forecast table (table 3)
+
+  # Output forecast table (table 3)
   output$forecastTable <- DT::renderDataTable(
-    DT::datatable(reactiveForecast()$forecastTable, options = list(dom = 't')) %>% formatStyle(
+    DT::datatable(
+      reactiveForecast()$forecastTable, 
+      options = list(dom = 't')) %>% 
+    formatStyle(
       'Basis',
       target = 'row',
       color = styleEqual("Simulated Scenario",'white'),
       backgroundColor = styleEqual("Simulated Scenario", '#dd4814')
-      
-  ))
+      )
+  )
   
   
-  #output the value for the advice type choosen
+  # output the value for the advice type choosen
   output$ICESadv <- renderText({
     paste0(
-      "The initial advice is= ", 
+      "The initial advice is = ", 
       reactiveData()$ICESadv, " t")
       
-    })
+  })
   
-#Output for the total amont available after the recreational selection
-    output$ICESadvComm <- renderText({
+  # Output for the total amont available after the recreational selection
+  output$ICESadvComm <- renderText({
     paste0(
       " Remaining available catch is = ", 
       round(reactiveData()$ICESadvComm,0),
       " t.")
     
   })
-    
-    
-   #hiding wellPanels
-    
-    output$hide_panel <- eventReactive(input$go, TRUE, ignoreInit = TRUE)
-    outputOptions(output, "hide_panel", suspendWhenHidden = FALSE)
-    
-
-    # output$FigureCap <- renderText({ 
-    #   txt <- "Simulated catch at age, by gear. The dashed line (---) indicates the predicted catch at age in the ICES forecast."
-    #   })
-    
-    # output$AllocTabCap <- renderText({ 
-    #   #return(paste("<span style=\"color:red\">","t","</span>"))
-    #   txt <- "Simulated catch allocations. Catch allocations may be less than inputted since total catch is limited to the chosen advice level."
-    # })
-   
-    # output$CatchTabCap <- renderText({ 
-    #   #return(paste("<span style=\"color:red\">","t","</span>"))
-    #   txt <- "Simulated catch and F by gear, including recreational catches."
-    # })
-    
-    # output$ScenTabCap <- renderText({ 
-    #   txt <- "Forecast scenarios."
-    # })
-    
-  #####-------------------------
-  ### for debugging  
-  # Don't show in final
-  
-  # output$debug_text <- renderText({ 
-  #   txt <- 
-  #     lapply(setdiff(names(input), "table"), 
-  #            function(x) c(paste0(x, ":"), capture.output(str(input[[x]])), ""))
-  #   
-  #   txt <- unlist(txt)
-  #   
-  #   txt <- c("Debug window:", "-------------\n", txt)
-  #   
-  #   paste(txt, collapse = "\n")
-  # })
-  # 
-  # output$debug_text_output <- renderText({
-  #   obj <- reactiveData()
-  #   txt <- 
-  #     lapply(names(obj), 
-  #            function(x) c(paste0(x, ":"), capture.output(str(obj[[x]])), ""))
-  #   
-  #   txt <- unlist(txt)
-  #   
-  #   txt <- c("Debug window:", "-------------\n", txt)
-  #   
-  #   paste(txt, collapse = "\n")
-  # })
-
-
+      
+  # hiding wellPanels  
+  output$hide_panel <- eventReactive(input$go, TRUE, ignoreInit = TRUE)
+  outputOptions(output, "hide_panel", suspendWhenHidden = FALSE)
 }

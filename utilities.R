@@ -83,7 +83,7 @@ runForecast <-
   ### Prepare data objects
   dat <-
     selectivity_age %>%
-    left_join(weights_age) %>%
+    left_join(weights_age, by = "Age") %>%
     #left_join(pop_age_2020) %>%
     mutate(M = M) #%>%
   #left_join(f_age_rec_2020) 
