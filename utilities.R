@@ -341,7 +341,7 @@ runForecast <-
   CatchGearTable <- cbind(rep(NA, nrow(CatchGearTable)), CatchGearTable)
   dimnames(CatchGearTable)[[2]][1] <- "Month"
   CatchGearTable[,"Month"] <- c(months[1:12], "TOTAL", "F")
-
+ 
   ## Catch gear table as VCLS
   vclsGearTable <- CatchGearTable[-nrow(CatchGearTable),c("Month",as.character(gears))]
   for (ii in 1:(nrow(catches))) vclsGearTable[ii,-1] <- round(as.numeric(vclsGearTable[ii,-1])/noVessels[,2],1)
@@ -366,12 +366,7 @@ runForecast <-
     theme(legend.background = element_rect(fill="grey96", size=0.5, linetype="solid")) +
     theme(panel.background = element_rect(fill = "grey96"))
    
-     
-     
-   
- 
-  
-  # dataPlot <- as.data.frame(selectivity_age); dataPlot <- rbind(dataPlot[1:17,],dataPlot)
+   # dataPlot <- as.data.frame(selectivity_age); dataPlot <- rbind(dataPlot[1:17,],dataPlot)
   # levels(dataPlot$gear) <- c(levels(dataPlot$gear),"Recreational")
   # dimnames(dataPlot)[[2]][2] <- "catch_n"; dataPlot[1:17,"gear"] <- "Recreational"
   # for (gg in c(as.character(gears),"Recreational")) dataPlot[dataPlot$gear==gg,]$catch_n <- catch_n[,gg]
@@ -415,6 +410,11 @@ runForecast <-
   AdviceScenarios <- read.csv("data/bss.27.4bc7ad-h 2019 Advice scenarios.csv")
   forecastTable <- rbind(forecastTable, forecastTable, forecastTable)
   for (i in 2:3) for (j in 1:ncol(forecastTable)) forecastTable[i,j] <- as.character(AdviceScenarios[i-1,j])
+  
+  # Add spaces instead of _ in names
+  dimnames(CatchGearTable)[[2]] <- gsub("_"," ",dimnames(CatchGearTable)[[2]])
+  dimnames(vclsGearTable)[[2]] <- gsub("_"," ",dimnames(vclsGearTable)[[2]])
+  forecastTable[,"Basis"] <- gsub("_"," ",forecastTable[,"Basis"])
   
   return(list(catchNplot = p, CatchGearTable = CatchGearTable, forecastTable = forecastTable, vclsGearTable=vclsGearTable)) 
 }

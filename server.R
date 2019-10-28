@@ -156,6 +156,7 @@ server <- function(input, output) {
     DF <- hot_to_r(input$table)
     DF[setdiff(rownames(DF),"TOTAL"),]
     DF["TOTAL",] <- colSums(DF[setdiff(rownames(DF),"TOTAL"),], na.rm = TRUE)
+    names(DF) <- gsub("_"," ",names(DF))
     valuesUser$data <- DF
   })
   
@@ -230,8 +231,9 @@ server <- function(input, output) {
     #TEMP# INPUT$CatchGear replaces input/ouput$CatchGear, which comes from the hands on table code below
     # This data file is not needed for the shiny operation
     # Note: users specify total catch by gear (part of this will be discarded)
-    #CatchGearCatchGearTable <- read.csv("data/CatchGear.csv")
+    #CatchGear <- read.csv("data/CatchGear.csv")
     CatchGear <- hot_to_r(input$table)
+    names(CatchGear) <- gsub(" ","_",names(CatchGear))
     # Calculate TOTAL
     CatchGear[13,] <- apply(CatchGear[1:12,], 2, sum, na.rm=T)
     
@@ -335,7 +337,7 @@ server <- function(input, output) {
       
     }else{
       
-      rbind(c(" Average monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,2)),reactiveForecast()$vclsGearTable[c(13),])
+      rbind(c("Average monthly catch/vessel",round(as.numeric(reactiveForecast()$vclsGearTable[c(13),-1])/12,2)),reactiveForecast()$vclsGearTable[c(13),])
       
     }
   })
