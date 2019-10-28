@@ -354,7 +354,8 @@ runForecast <-
   for (gg in c(as.character(gears),"Recreational")) dataPlot[dataPlot$gear==gg,]$catch_n <- catch_n[,gg]
   if (ICESadvOpt=="MSY") expected <- AdviceForecastCatchAge[,"MSY"] else expected <- AdviceForecastCatchAge[,"MSYlow"]
   dataPlot[dataPlot$gear=="AdviceForecast",]$catch_n <- expected
-
+  dataPlot$gear <- gsub("_"," ",dataPlot$gear)
+  
   p <-
     ggplot() +
     geom_area(data = subset(dataPlot, gear!="AdviceForecast"), position = 'stack',
