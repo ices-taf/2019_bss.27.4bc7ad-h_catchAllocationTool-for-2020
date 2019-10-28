@@ -349,8 +349,8 @@ server <- function(input, output) {
     DT::formatStyle(
       'Basis',
       target = 'row',
-      color = styleEqual("Simulated Scenario",'white'),
-      backgroundColor = styleEqual("Simulated Scenario", '#dd4814')
+      color = DT::styleEqual("Simulated Scenario",'white'),
+      backgroundColor = DT::styleEqual("Simulated Scenario", '#dd4814')
       )
   )
   
