@@ -24,7 +24,7 @@ ui <- shiny::navbarPage(
                width = side_width,
                radioButtons("AdviceType",
                             label = h4("Select 2020 catch advice"),
-                            choices = list("EU MAP Fmsy" = "MSY", 
+                            choices = list("EU MAP F<sub>MSY</sub>" = "MSY", 
                                            "EU MAP Fmsy lower" = "MSYlow"), 
                             inline = TRUE, 
                             selected = "MSY"),
@@ -149,10 +149,10 @@ theme=shinytheme("united"),
 position ="fixed-top",
 
 tags$script(HTML("var header = $('.navbar > .container-fluid');
- header.append('<div style=\"float:right\"><ahref=\"https://github.com\"><img src=\"GitHub-Mark-32px.png\" alt=\"alt\" style=\"margin-top: -14px; padding-right:5px;padding-top:25px;\"></a></div>');
+ header.append('<div style=\"float:right\"><a href=\"https://github.com/ices-tools-prod/seabass-catch-allocation-tool\"><img src=\"GitHub-Mark-32px.png\" alt=\"alt\" style=\"margin-top: -14px; padding-right:5px;padding-top:25px;\"></a></div>');
  console.log(header)"))
 
-#titlePanel(tags$a(imageOutput("GitHub-Mark-32px.png"),href="https://github.com/"))
+
 
 )
 
