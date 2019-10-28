@@ -10,10 +10,8 @@ side_width <- 5
 # user interface
 ui <- shiny::navbarPage(
   
-  title = div(img(src='ICES_logo_toolName.png',style="margin-top: -14px; padding-right:10px;padding-bottom:10px", height = 60)),
+  title = div(img(src='Sea_bass_Negative_LOGO.png',style="margin-top: -14px; padding-right:10px;padding-bottom:10px", height = 60)),
   #windowTitle="Seabass catch allocation Tool", 
-  
-
   
   tabPanel("Instructions",
            includeMarkdown("Instructions.Rmd")
@@ -151,7 +149,7 @@ theme=shinytheme("united"),
 position ="fixed-top",
 
 tags$script(HTML("var header = $('.navbar > .container-fluid');
- header.append('<div style=\"float:right\"><ahref=\"https://github.com/ices-taf/2019_4017-19_TechnicalService\"><img src=\"GitHub-Mark-32px.png\" alt=\"alt\" style=\"margin-top: -14px; padding-right:5px;padding-top:25px;\"> </a>`</div>');
+ header.append('<div style=\"float:right\"><ahref=\"https://github.com\"><img src=\"GitHub-Mark-32px.png\" alt=\"alt\" style=\"margin-top: -14px; padding-right:5px;padding-top:25px;\"></a></div>');
  console.log(header)"))
 
 #titlePanel(tags$a(imageOutput("GitHub-Mark-32px.png"),href="https://github.com/"))
